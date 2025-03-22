@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://modelcontextprotocol.io">
-    <img src="https://spec.modelcontextprotocol.io/favicon.ico" alt="MCP Logo" width="100" style="background-color: white; padding: 10px; border-radius: 50%;" />
+    <img src="https://microsoft.github.io/genaiscript/_astro/mcp.CBnQ_GM8_1eWG7e.webp" alt="MCP Logo" width="150" />
   </a>
 </p>
 
