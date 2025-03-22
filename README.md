@@ -12,7 +12,9 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/modelcontextprotocol/docs/main/favicon.svg" alt="MCP Logo" width="200" />
+  <span style="background: white; display: inline-block; padding: 10px; border-radius: 10px;">
+    <img src="https://raw.githubusercontent.com/modelcontextprotocol/docs/main/logo/light.svg" alt="MCP Logo" width="200" />
+  </span>
 </p>
 
 </div>
@@ -174,56 +176,3 @@ Add this MCP server to your Cursor IDE's MCP configuration:
   }
 }
 ```
-
-## 🧰 Available Tools
-
-### JIRA Tools
-
-| Tool                       | Description                                      | Parameters                           | Returns                           |
-| -------------------------- | ------------------------------------------------ | ------------------------------------ | --------------------------------- |
-| `jira_get_assigned_issues` | Retrieves all issues assigned to you             | None                                 | Markdown-formatted list of issues |
-| `jira_get_issue`           | Gets detailed information about a specific issue | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
-| `jira_create_task`         | Creates a local task from a JIRA issue           | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
-
-### System Time Tools
-
-| Tool              | Description                  | Parameters                                  | Returns                    |
-| ----------------- | ---------------------------- | ------------------------------------------- | -------------------------- |
-| `get_system_time` | Gets the current system time | `format`: (Optional) date-fns format string | Formatted date/time string |
-
-## 📁 Project Structure
-
-```
-src/
- ├── features/        # MCP features (JIRA, system time)
- ├── server/          # MCP server implementation
- ├── shared/          # Shared utilities
- └── index.ts         # Main entry point
-```
-
-### NPM Scripts
-
-| Command                 | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `npm run build`         | Build the project                         |
-| `npm run publish`       | Build and publish package to npm registry |
-| `npm run inspect`       | Run with MCP inspector for debugging      |
-| `npm run cleanup-ports` | Release ports used by the inspector       |
-| `npm test`              | Run tests                                 |
-
-## 📘 Resources
-
-- [Model Context Protocol Documentation](https://modelcontextprotocol.io)
-- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
-- [MCP Specification](https://spec.modelcontextprotocol.io/specification/)
-- [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
-
-## 📄 License
-
-[MIT](LICENSE) © Stanislav Stepanenko
-
----
-
-<div align="center">
-  <sub>Built with ❤️ for a better developer experience</sub>
-</div>
