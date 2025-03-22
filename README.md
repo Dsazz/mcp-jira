@@ -113,7 +113,7 @@ Test your MCP server directly with Claude:
 1. Build and run your server:
 
    ```bash
-   npm run build
+   npm run build  # You must build the project before running it
    node dist/index.js
    ```
 
@@ -153,6 +153,8 @@ Test your MCP server directly with Claude:
 </details>
 
 ## 🔌 Integration with Cursor IDE
+
+> **⚠️ Important:** You must build the project with `npm run build` before integrating with Cursor IDE or Claude Desktop.
 
 Add this MCP server to your Cursor IDE's MCP configuration:
 
