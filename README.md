@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="https://lobehub.com/static/icons/mcp.default.svg" alt="MCP Logo" width="200" />
+  <img src="https://raw.githubusercontent.com/modelcontextprotocol/docs/main/favicon.svg" alt="MCP Logo" width="200" />
 </p>
 
 </div>
