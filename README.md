@@ -6,15 +6,10 @@
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=Jira&logoColor=white)](https://www.atlassian.com/software/jira)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-blue?style=for-the-badge)](https://modelcontextprotocol.io)
 
 <p align="center">
   <b>A powerful Model Context Protocol (MCP) server that brings JIRA integration directly to your Cursor IDE</b>
-</p>
-
-<p align="center">
-  <a href="https://modelcontextprotocol.io">
-    <img src="https://microsoft.github.io/genaiscript/_astro/mcp.CBnQ_GM8_1eWG7e.webp" alt="MCP Logo" width="150" />
-  </a>
 </p>
 
 </div>
