@@ -1,12 +1,24 @@
-// Mock the logger before importing to ensure proper mocking
-jest.mock('../../../../shared/logger', () => ({
-  logger: {
-    error: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn()
-  }
-}));
+// Mock the shared logging module
+jest.mock('../../../../shared/logging', () => {
+  // Create mock functions
+  const mockInfo = jest.fn();
+  const mockWarn = jest.fn();
+  const mockError = jest.fn();
+  const mockDebug = jest.fn();
+  
+  // Create a mock logger instance
+  const mockLogger = {
+    info: mockInfo,
+    warn: mockWarn,
+    error: mockError,
+    debug: mockDebug
+  };
+  
+  // Return the mocked module
+  return {
+    getLogger: jest.fn().mockReturnValue(mockLogger)
+  };
+});
 
 import { handleError } from '../../errors/error-handler';
 import { 
@@ -16,10 +28,12 @@ import {
   ServerError,
   ValidationError
 } from '../../errors/api-errors';
-import { logger } from '../../../../shared/logger';
+import { getLogger } from '../../../../shared/logging';
 import { expectErrorResponse } from '../__mocks__/test-utils';
 
 describe('Error Handler', () => {
+  const mockLogger = getLogger('JIRA');
+  
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -33,7 +47,7 @@ describe('Error Handler', () => {
     
     // Assert
     expectErrorResponse(result, 'ISSUE_NOT_FOUND', 'Issue not found');
-    expect(logger.info).toHaveBeenCalled();
+    expect(mockLogger.info).toHaveBeenCalled();
   });
   
   it('should handle ValidationError with appropriate message', () => {
@@ -45,7 +59,7 @@ describe('Error Handler', () => {
     
     // Assert
     expectErrorResponse(result, 'VALIDATION_ERROR', 'Invalid parameter');
-    expect(logger.warn).toHaveBeenCalled();
+    expect(mockLogger.warn).toHaveBeenCalled();
   });
   
   it('should handle AuthorizationError with appropriate message', () => {
@@ -57,7 +71,7 @@ describe('Error Handler', () => {
     
     // Assert
     expectErrorResponse(result, 'AUTHORIZATION_FAILED', 'Failed to authorize with JIRA');
-    expect(logger.error).toHaveBeenCalled();
+    expect(mockLogger.error).toHaveBeenCalled();
   });
   
   it('should handle ServerError with appropriate message', () => {
@@ -69,7 +83,7 @@ describe('Error Handler', () => {
     
     // Assert
     expectErrorResponse(result, 'SERVER_ERROR', 'Internal server error');
-    expect(logger.error).toHaveBeenCalled();
+    expect(mockLogger.error).toHaveBeenCalled();
   });
   
   it('should handle generic ApiError with appropriate message', () => {
@@ -81,7 +95,7 @@ describe('Error Handler', () => {
     
     // Assert
     expectErrorResponse(result, 'BAD_REQUEST', 'Unknown error');
-    expect(logger.error).toHaveBeenCalled();
+    expect(mockLogger.error).toHaveBeenCalled();
   });
   
   it('should handle non-API errors as unexpected errors', () => {
@@ -93,6 +107,6 @@ describe('Error Handler', () => {
     
     // Assert
     expectErrorResponse(result, 'UNKNOWN_ERROR', 'Unexpected error');
-    expect(logger.error).toHaveBeenCalled();
+    expect(mockLogger.error).toHaveBeenCalled();
   });
 }); 

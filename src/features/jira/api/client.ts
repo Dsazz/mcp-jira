@@ -1,7 +1,7 @@
 /**
  * API client for JIRA REST API
  */
-import { getConfig } from '../config/config';
+import { JiraConfig } from '../config/jira-config';
 import { 
   Issue, 
   SearchResponse, 
@@ -16,16 +16,23 @@ import {
   RateLimitError,
   IssueError
 } from '../errors/api-errors';
-import { logger } from '../../../shared/logger';
+import { getLogger } from '../../../shared/logging';
 
 export class ApiClient {
   private baseUrl: string;
   private authHeader: string;
+  private logger = getLogger('JIRA API');
 
-  constructor() {
-    const { username, apiToken, host } = getConfig();
-    this.baseUrl = `${host}/rest/api/2`;
-    this.authHeader = `Basic ${Buffer.from(`${username}:${apiToken}`).toString('base64')}`;
+  constructor(config?: JiraConfig) {
+    // Use provided config or create a new one
+    const jiraConfig = config || new JiraConfig();
+    
+    if (!jiraConfig.isValid()) {
+      this.logger.warn('Initializing API client with invalid configuration');
+    }
+    
+    this.baseUrl = `${jiraConfig.host}/rest/api/2`;
+    this.authHeader = `Basic ${Buffer.from(`${jiraConfig.username}:${jiraConfig.getApiToken()}`).toString('base64')}`;
   }
 
   /**
@@ -47,10 +54,7 @@ export class ApiClient {
     }
 
     try {
-      logger.debug(`Sending ${method} request to ${url}`, { 
-        prefix: 'JIRA API',
-        isMcp: true 
-      });
+      this.logger.debug(`Sending ${method} request to ${url}`);
 
       const response = await fetch(url, {
         method,
@@ -202,5 +206,5 @@ export class ApiClient {
   }
 }
 
-// Export a singleton instance
+// Create a singleton instance
 export const api = new ApiClient(); 

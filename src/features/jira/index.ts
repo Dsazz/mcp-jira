@@ -3,31 +3,30 @@
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools } from './register-tools';
-import { validateConfig } from './config/config';
-import { logger } from '../../shared/logger';
+import { JiraConfig } from './config/jira-config';
+import { getLogger } from '../../shared/logging';
 
 /**
  * Initializes the JIRA feature
  * @param server - The MCP server instance
  */
 export function initializeJiraFeature(server: McpServer): void {
+  const jiraLogger = getLogger('JIRA');
+  
   try {
-    // Validate JIRA configuration on startup (warn but don't throw)
-    validateConfig();
+    // Create and validate JIRA configuration
+    const config = new JiraConfig();
     
-    // Register all tools with the MCP server
-    registerTools(server);
+    // Log configuration status
+    jiraLogger.info('JIRA configuration loaded', config.getDiagnostics());
     
-    logger.info('JIRA feature initialized successfully', { 
-      prefix: 'JIRA', 
-      isMcp: true 
-    });
+    // Register all tools with the MCP server (passing the config)
+    registerTools(server, config);
+    
+    jiraLogger.info('JIRA feature initialized successfully');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(new Error(`Failed to initialize JIRA feature: ${errorMessage}`), { 
-      prefix: 'JIRA', 
-      isMcp: true 
-    });
+    jiraLogger.error(`Failed to initialize JIRA feature: ${errorMessage}`);
   }
 }
 

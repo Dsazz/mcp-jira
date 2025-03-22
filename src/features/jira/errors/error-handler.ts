@@ -2,7 +2,7 @@
  * Centralized error handling for MCP tools
  */
 import { ApiError, NotFoundError, AuthorizationError, ValidationError } from './api-errors';
-import { logger } from '../../../shared/logger';
+import { getLogger } from '../../../shared/logging';
 import { McpResponse } from '../api/types';
 
 /**
@@ -67,12 +67,15 @@ function logError(error: unknown): void {
     ? error 
     : new Error(String(error));
     
+  // Get JIRA feature logger 
+  const jiraLogger = getLogger('JIRA');
+  
   // Determine logging level based on error type
   if (error instanceof ValidationError) {
-    logger.warn(errorObject, { prefix: 'JIRA', isMcp: true });
+    jiraLogger.warn(errorObject.message);
   } else if (error instanceof NotFoundError) {
-    logger.info(errorObject, { prefix: 'JIRA', isMcp: true });
+    jiraLogger.info(errorObject.message);
   } else {
-    logger.error(errorObject, { prefix: 'JIRA', isMcp: true });
+    jiraLogger.error(errorObject.message);
   }
 } 

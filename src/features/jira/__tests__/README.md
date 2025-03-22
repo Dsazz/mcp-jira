@@ -2,42 +2,12 @@
 
 This directory contains unit tests for the JIRA module, organized to match the structure of the module itself.
 
-## Test Organization
-
-```
-src/features/jira/__tests__/
-│
-├── api/                      # Tests for API client
-│   └── client.test.ts        # Tests for API client methods
-│
-├── tools/                    # Tests for tool implementations
-│   ├── get-issue.tool.test.ts          # GetIssueTool tests
-│   ├── get-assigned-issues.tool.test.ts # GetAssignedIssuesTool tests
-│   └── create-task.tool.test.ts        # CreateTaskTool tests
-│
-├── formatters/               # Tests for output formatters
-│   ├── issue.formatter.test.ts         # IssueFormatter tests
-│   └── issue-list.formatter.test.ts    # IssueListFormatter tests
-│
-├── validation/               # Tests for validation
-│   └── zod-validatable.test.ts         # ZodValidatable mixin tests
-│
-└── errors/                   # Tests for error handling
-    └── error-handler.test.ts           # Error handler tests
-```
-
 ## Running Tests
 
 To run all tests:
 
 ```bash
 npm test
-```
-
-To run tests for a specific component:
-
-```bash
-npm test -- src/features/jira/__tests__/api/client.test.ts
 ```
 
 ## Testing Approach
@@ -78,30 +48,6 @@ The following mocks are available in the `__mocks__` directory:
 - **Formatter Mocks**: Mock implementations of JIRA formatters
 - **Config Mocks**: Mock implementations of JIRA configuration
 - **Test Utilities**: Helper functions for common assertions
-
-### How to Use Mocks
-
-You can either import individual mocks:
-
-```typescript
-import {
-  mockLogger,
-  setupLoggerMock,
-  clearLoggerMocks,
-} from "./__mocks__/logger.mock";
-```
-
-Or import from the index file:
-
-```typescript
-import {
-  mockLogger,
-  setupLoggerMock,
-  clearLoggerMocks,
-  mockApi,
-  testIssues,
-} from "./__mocks__";
-```
 
 ### Setting Up Mocks in Tests
 

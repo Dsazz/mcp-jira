@@ -7,4 +7,10 @@ module.exports = {
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
+  moduleNameMapper: {
+    "^src/features/jira$":
+      "<rootDir>/src/server/__tests__/__mocks__/features.ts",
+    "^src/features/system-time$":
+      "<rootDir>/src/server/__tests__/__mocks__/features.ts",
+  },
 };

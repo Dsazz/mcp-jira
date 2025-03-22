@@ -2,30 +2,33 @@
 
 import { config } from 'dotenv';
 import { startServer } from './server';
-import { logger } from './shared';
+import { logger } from './shared/logging';
+import { normalizeError } from './shared/errors';
 
-// Initialize and start the server
-async function init(): Promise<void> {
+/**
+ * Configure environment variables and start the application
+ */
+async function bootstrap(): Promise<void> {
   try {
-    // Load .env file if it exists
+    // Load environment variables
     config();
-
-    // Start the server
+    logger.info('Environment configured', { prefix: 'Bootstrap' });
+    
+    // Start the MCP server (which handles its own lifecycle)
     await startServer();
   } catch (error) {
-    logger.error(error instanceof Error ? error : new Error(String(error)), { 
-      prefix: 'Startup', 
-      isMcp: true 
+    // Basic error handling for bootstrap process
+    logger.error(normalizeError(error), { 
+      prefix: 'Bootstrap' 
     });
     process.exit(1);
   }
 }
 
-// Start the server
-init().catch((error) => {
-  logger.error(error instanceof Error ? error : new Error(String(error)), { 
-    prefix: 'Server', 
-    isMcp: true 
+// Start the application
+bootstrap().catch(error => {
+  logger.error(normalizeError(error), { 
+    prefix: 'Bootstrap' 
   });
   process.exit(1);
 }); 

@@ -1,11 +1,17 @@
 // Mock config before importing the module
-jest.mock('../../config/config', () => ({
-  getConfig: jest.fn().mockReturnValue({
-    username: 'test-user',
-    apiToken: 'test-token',
+jest.mock('../../config/jira-config', () => ({
+  JiraConfig: jest.fn().mockImplementation(() => ({
+    getApiToken: jest.fn().mockReturnValue('test-token'),
     host: 'https://test-jira.atlassian.net',
-  }),
-  logConfigStatus: jest.fn()
+    username: 'test-user',
+    isValid: jest.fn().mockReturnValue(true),
+    getDiagnostics: jest.fn().mockReturnValue({
+      host: 'https://test-jira.atlassian.net',
+      username: 'test-user',
+      hasApiToken: true,
+      isValid: true
+    })
+  }))
 }));
 
 // Mock the API client directly
@@ -22,15 +28,11 @@ jest.mock('../../formatters/issue-list.formatter', () => ({
   }))
 }));
 
+// Mock the validation
+jest.mock('../../../../shared/validation/zod-validator');
+
 // Mock the logger
-jest.mock('../../../../shared/logger', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn()
-  }
-}));
+jest.mock('../../../../shared/logging');
 
 import { GetAssignedIssuesTool } from '../../tools/get-assigned-issues/get-assigned-issues.tool';
 import { api } from '../../api/client';

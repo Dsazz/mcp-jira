@@ -1,33 +1,44 @@
 import { CreateTaskTool } from '../../tools/create-task/create-task.tool';
 import { api } from '../../api/client';
-import { IssueError } from '../../errors/api-errors';
+import { NotFoundError } from '../../errors/api-errors';
+
+// Mock the JiraConfig
+jest.mock('../../config/jira-config', () => ({
+  JiraConfig: jest.fn().mockImplementation(() => ({
+    getApiToken: jest.fn().mockReturnValue('test-token'),
+    host: 'https://jira.example.com',
+    username: 'test-user',
+    isValid: jest.fn().mockReturnValue(true),
+    getDiagnostics: jest.fn().mockReturnValue({
+      host: 'https://jira.example.com',
+      username: 'test-user',
+      hasApiToken: true,
+      isValid: true
+    })
+  }))
+}));
 
 // Mock the API client
 jest.mock('../../api/client', () => ({
   api: {
-    createTaskFromIssue: jest.fn(),
-    getIssue: jest.fn().mockResolvedValue({
-      key: 'TEST-123',
-      id: '1000',
-      fields: {
-        summary: 'Test issue summary',
-        status: {
-          name: 'Open'
-        }
-      }
-    })
+    getIssue: jest.fn()
   }
 }));
 
+// Mock the formatter
+jest.mock('../../formatters/issue.formatter', () => {
+  return {
+    IssueFormatter: jest.fn().mockImplementation(() => ({
+      format: jest.fn((issue) => `Formatted ${issue.key}: ${issue.fields.summary}`)
+    }))
+  };
+});
+
+// Mock the validation
+jest.mock('../../../../shared/validation/zod-validator');
+
 // Mock the logger
-jest.mock('../../../../shared/logger', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn()
-  }
-}));
+jest.mock('../../../../shared/logging');
 
 describe('CreateTaskTool', () => {
   let tool: CreateTaskTool;
@@ -46,6 +57,7 @@ describe('CreateTaskTool', () => {
       id: '1000',
       fields: {
         summary: 'Test issue summary',
+        description: 'Test description',
         status: {
           name: 'Open'
         }
@@ -53,7 +65,7 @@ describe('CreateTaskTool', () => {
     });
   });
   
-  it('should create a task from an issue successfully', async () => {
+  it('should create a task successfully', async () => {
     // Arrange
     const params = { issueKey: 'TEST-123' };
     
@@ -62,9 +74,12 @@ describe('CreateTaskTool', () => {
     
     // Assert
     expect(mockGetIssue).toHaveBeenCalledWith('TEST-123', expect.any(Array));
-    expect(result).toHaveProperty('content');
-    expect(result.content[0].type).toBe('text');
-    expect(result.content[0].text).toContain('Task created from issue TEST-123');
+    expect(result).toEqual({
+      content: [{ 
+        type: 'text', 
+        text: expect.stringContaining('Task created from issue TEST-123') 
+      }]
+    });
   });
   
   it('should handle missing issueKey parameter', async () => {
@@ -76,14 +91,12 @@ describe('CreateTaskTool', () => {
     
     // Assert
     expect(result).toHaveProperty('isError', true);
-    expect(result.content[0].text).toContain('Invalid parameters');
+    expect(result.content[0].text).toContain('Invalid task parameters');
   });
   
-  it('should handle API errors during task creation', async () => {
+  it('should handle API errors during issue retrieval', async () => {
     // Arrange
-    mockGetIssue.mockRejectedValue(
-      new IssueError('Cannot retrieve issue data', 'TEST-123')
-    );
+    mockGetIssue.mockRejectedValue(new Error('Failed to retrieve issue'));
     const params = { issueKey: 'TEST-123' };
     
     // Act
@@ -91,31 +104,19 @@ describe('CreateTaskTool', () => {
     
     // Assert
     expect(result).toHaveProperty('isError', true);
-    expect(result.content[0].text).toContain('Cannot retrieve issue data');
+    expect(result.content[0].text).toContain('Failed to retrieve issue');
   });
   
-  it('should include issue details in response', async () => {
+  it('should handle not found errors', async () => {
     // Arrange
-    mockGetIssue.mockResolvedValue({
-      key: 'TEST-789',
-      id: '3000',
-      self: 'https://jira.example.com/rest/api/2/issue/3000',
-      fields: {
-        summary: 'Test issue with link',
-        status: {
-          name: 'Open'
-        }
-      }
-    });
+    mockGetIssue.mockRejectedValue(new NotFoundError('Issue does not exist'));
     const params = { issueKey: 'TEST-789' };
     
     // Act
     const result = await tool.handler(params);
     
     // Assert
-    expect(result).toHaveProperty('content');
-    expect(result.content[0].type).toBe('text');
-    expect(result.content[0].text).toContain('Task created from issue TEST-789');
-    expect(result.content[0].text).toContain('Test issue with link');
+    expect(result).toHaveProperty('isError', true);
+    expect(result.content[0].text).toContain('Issue does not exist');
   });
 }); 

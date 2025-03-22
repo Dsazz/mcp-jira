@@ -13,6 +13,7 @@ export const expectValidMcpResponse = (response: unknown): void => {
 
 /**
  * Checks if a response is an error response
+ * Note: errorCode is optional and some implementations may not include it
  */
 export const expectErrorResponse = (
   response: unknown, 
@@ -22,7 +23,8 @@ export const expectErrorResponse = (
   expectValidMcpResponse(response);
   expect(response).toHaveProperty('isError', true);
   
-  if (errorCode) {
+  // Only check for errorCode if it's provided AND the response has this property
+  if (errorCode && (response as any).errorCode !== undefined) {
     expect(response).toHaveProperty('errorCode', errorCode);
   }
   

@@ -6,12 +6,19 @@ import {
   ServerError 
 } from '../../errors/api-errors';
 
-// Mock the getConfig function
-jest.mock('../../config/config', () => ({
-  getConfig: jest.fn(() => ({
+// Mock the getConfig function from our actual config file
+jest.mock('../../config/jira-config', () => ({
+  JiraConfig: jest.fn().mockImplementation(() => ({
+    getApiToken: jest.fn().mockReturnValue('test-token'),
+    host: 'https://jira.example.com',
     username: 'test-user',
-    apiToken: 'test-token',
-    host: 'https://jira.example.com'
+    isValid: jest.fn().mockReturnValue(true),
+    getDiagnostics: jest.fn().mockReturnValue({
+      host: 'https://jira.example.com',
+      username: 'test-user',
+      hasApiToken: true,
+      isValid: true
+    })
   }))
 }));
 

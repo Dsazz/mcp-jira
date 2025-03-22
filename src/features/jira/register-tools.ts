@@ -6,17 +6,22 @@ import { GetAssignedIssuesTool } from './tools/get-assigned-issues/get-assigned-
 import { GetIssueTool } from './tools/get-issue/get-issue.tool';
 import { CreateTaskTool } from './tools/create-task/create-task.tool';
 import { issueKeySchema } from './validation/common-schemas';
-import { logger } from '../../shared/logger';
+import { getLogger } from '../../shared/logging';
+import { JiraConfig } from './config/jira-config';
 
 /**
  * Registers all JIRA tools with the MCP server
+ * @param server - The MCP server instance
+ * @param config - The JIRA configuration
  */
-export function registerTools(server: McpServer): void {
+export function registerTools(server: McpServer, config: JiraConfig): void {
+  const jiraLogger = getLogger('JIRA');
+  
   try {
-    // Initialize tools
-    const getAssignedIssuesTool = new GetAssignedIssuesTool();
-    const getIssueTool = new GetIssueTool();
-    const createTaskTool = new CreateTaskTool();
+    // Initialize tools with shared config
+    const getAssignedIssuesTool = new GetAssignedIssuesTool(config);
+    const getIssueTool = new GetIssueTool(config);
+    const createTaskTool = new CreateTaskTool(config);
 
     // Tool for getting assigned issues
     server.tool(
@@ -46,13 +51,10 @@ export function registerTools(server: McpServer): void {
       createTaskTool.handler.bind(createTaskTool)
     );
 
-    logger.info('JIRA tools registered successfully', { prefix: 'JIRA', isMcp: true });
+    jiraLogger.info('JIRA tools registered successfully');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(new Error(`Failed to register JIRA tools: ${errorMessage}`), { 
-      prefix: 'JIRA', 
-      isMcp: true 
-    });
+    jiraLogger.error(`Failed to register JIRA tools: ${errorMessage}`);
     throw error;
   }
 } 

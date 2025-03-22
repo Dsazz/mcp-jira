@@ -12,53 +12,6 @@ This module provides a seamless integration between the MCP (Model Context Proto
 
 The JIRA integration follows a modular, component-based architecture with clear separation of concerns:
 
-### Directory Structure
-
-```
-src/features/jira/
-│
-├── tools/                                 # Tool implementations
-│   ├── tool.interface.ts                  # Interface for all tools
-│   ├── base.tool.ts                       # Base tool class
-│   ├── get-issue/                         # Issue retrieval tool
-│   │   ├── get-issue.tool.ts              # Implementation
-│   │   ├── get-issue.schema.ts            # Parameter schema
-│   │   └── get-issue.types.ts             # Type definitions
-│   │
-│   ├── get-assigned-issues/               # Assigned issues tool
-│   │   └── get-assigned-issues.tool.ts    # Implementation
-│   │
-│   └── create-task/                       # Task creation tool
-│       ├── create-task.tool.ts            # Implementation
-│       ├── create-task.schema.ts          # Parameter schema
-│       └── create-task.types.ts           # Type definitions
-│
-├── formatters/                            # Output formatters
-│   ├── formatter.interface.ts             # Formatter interface
-│   ├── issue.formatter.ts                 # Single issue formatter
-│   └── issue-list.formatter.ts            # Issue list formatter
-│
-├── validation/                            # Input validation
-│   ├── common-schemas.ts                  # Shared validation schemas
-│   ├── issue-validator.ts                 # Issue validation
-│   ├── validator.ts                       # Generic validation
-│   └── zod-validatable.mixin.ts           # Validation mixin
-│
-├── errors/                                # Error handling
-│   ├── api-errors.ts                      # Error types
-│   └── error-handler.ts                   # Error processing
-│
-├── api/                                   # JIRA API integration
-│   ├── client.ts                          # API client
-│   └── types.ts                           # API type definitions
-│
-├── config/                                # Configuration
-│   └── config.ts                          # Config management
-│
-├── index.ts                               # Public API
-└── register-tools.ts                      # Tool registration
-```
-
 ### Design Principles
 
 1. **Separation of Concerns**: Each component has a single responsibility
@@ -143,14 +96,6 @@ Formatters convert JIRA API responses into human-readable markdown:
 - `IssueFormatter`: Formats a single JIRA issue
 - `IssueListFormatter`: Formats a list of JIRA issues
 
-## Validation
-
-The module uses Zod for schema validation:
-
-- `ZodValidatable` mixin: Adds validation capabilities to tools
-- `common-schemas.ts`: Contains reusable validation schemas
-- `validator.ts`: Provides generic validation utilities
-
 ## Configuration
 
 Configuration is managed through environment variables:
@@ -186,12 +131,6 @@ initializeJiraFeature(server);
 3. Implement the tool class extending BaseTool
 4. Update `register-tools.ts` to register your new tool
 
-### Adding a New Formatter
-
-1. Create a new formatter class in `formatters/`
-2. Implement the `Formatter<T>` interface
-3. Use the formatter in your tools
-
 ## Testing
 
 Each component is designed to be testable in isolation:
@@ -199,10 +138,3 @@ Each component is designed to be testable in isolation:
 - Tools can be tested with mocked API clients and formatters
 - Formatters can be tested with sample data
 - Validators can be tested with valid and invalid inputs
-
-## Best Practices
-
-- Always validate inputs using the ZodValidatable mixin
-- Handle empty results appropriately
-- Use logger for context-aware logging
-- Follow the established patterns for new components
