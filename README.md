@@ -12,9 +12,9 @@
 </p>
 
 <p align="center">
-  <span style="background: white; display: inline-block; padding: 10px; border-radius: 10px;">
-    <img src="https://raw.githubusercontent.com/modelcontextprotocol/docs/main/logo/light.svg" alt="MCP Logo" width="200" />
-  </span>
+  <a href="https://modelcontextprotocol.io">
+    <img src="https://spec.modelcontextprotocol.io/favicon.ico" alt="MCP Logo" width="100" style="background-color: white; padding: 10px; border-radius: 50%;" />
+  </a>
 </p>
 
 </div>
