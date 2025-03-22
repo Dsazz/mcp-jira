@@ -1,24 +1,42 @@
-# JIRA MCP Server for Cursor
+<div align="center">
 
-A Model Context Protocol (MCP) server that provides JIRA integration tools for Cursor IDE.
+# 🔗 JIRA MCP Server for Cursor
 
-## Features
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=Jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-- **Jira Tools**:
-  - Get assigned issues
-  - Get specific issue details
-  - Create tasks from Jira issues
-- **System Time Tools**:
-  - Get current system time
+<p align="center">
+  <b>A powerful Model Context Protocol (MCP) server that brings JIRA integration directly to your Cursor IDE</b>
+</p>
 
-## Installation
+<p align="center">
+  <img src="https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/main/website/static/img/mcp-logo.png" alt="MCP Logo" width="200" />
+</p>
 
-### Local Development
+</div>
+
+---
+
+## ✨ Features
+
+- 📋 **Access JIRA Directly From Cursor**
+  - View your assigned issues without leaving your IDE
+  - Get detailed information on specific issues with one command
+  - Convert JIRA issues into local tasks seamlessly
+- ⏰ **System Time Integration**
+  - Customizable date and time formatting
+  - Locale support via date-fns
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jira-mcp.git
-cd jira-mcp
+git clone https://github.com/Dsazz/mcp-jira.git
+cd mcp-jira
 
 # Install dependencies
 npm install
@@ -32,82 +50,83 @@ cp .env.example .env
 
 Create a `.env` file with the following variables:
 
-```
+```ini
 JIRA_HOST=https://your-instance.atlassian.net
 JIRA_USERNAME=your-email@example.com
 JIRA_API_TOKEN=your-jira-api-token-here
 ```
 
-#### Important note about JIRA API tokens
+> **🔑 Important Note About JIRA API Tokens**
+>
+> - Tokens may contain special characters, including the `=` sign
+> - Place the token on a single line in the `.env` file
+> - Do not add quotes around the token value
+> - Paste the token exactly as provided by Atlassian
 
-JIRA API tokens can be quite long and may contain special characters, including the `=` sign at the end. Our setup uses `dotenv` to correctly parse the `.env` file and ensures that these tokens are properly passed to both the MCP server and the inspector.
+## 🛠️ Development Tools
 
-If you're having issues with authentication:
+### MCP Inspector
 
-1. Make sure your token is on a single line in the `.env` file
-2. Do not add quotes around the token value
-3. The token should be pasted exactly as provided by Atlassian
+<details>
+<summary>Click to expand MCP Inspector details</summary>
 
-## Using the MCP Inspector
-
-The MCP Inspector is a developer tool for testing and debugging MCP servers. This project includes custom configurations for running the inspector with our JIRA MCP server.
-
-### Using the Custom Inspector Script
-
-We've created a custom inspector script that handles port management and server initialization:
+The MCP Inspector is a powerful tool for testing and debugging your MCP server.
 
 ```bash
 # Run the inspector (no separate build step needed)
 npm run inspect
 ```
 
-The inspector will:
+The inspector automatically:
 
-1. Automatically load all environment variables from your `.env` file
-2. Clean up any processes using the required ports (5175 and 3002)
-3. Build the project automatically if needed
-4. Start the MCP server with the loaded environment variables
-5. Start the inspector connected to your server
+- Loads environment variables from `.env`
+- Cleans up occupied ports (5175, 3002)
+- Builds the project when needed
+- Starts the MCP server with your configuration
+- Launches the inspector UI
 
-The inspector will be available at http://localhost:5175?proxyPort=3002
+Visit the inspector at http://localhost:5175?proxyPort=3002
 
-If you encounter port conflicts, you can manually clean up the ports:
+If you encounter port conflicts:
 
 ```bash
 npm run cleanup-ports
 ```
 
-### Debugging with the Inspector
+#### Debugging with the Inspector
 
-1. Start the inspector using one of the methods above
-2. Open the inspector UI in your browser
-3. Use the UI to:
-   - View MCP server capabilities
-   - Call tools and see their results
-   - View the JSON communication between client and server
-   - Test different input parameters
+The inspector UI allows you to:
 
-For more detailed information, visit the [MCP Inspector GitHub repository](https://github.com/modelcontextprotocol/inspector).
+- View all available MCP capabilities
+- Execute tools and examine responses
+- Analyze the JSON communication
+- Test with different parameters
 
-## Integration with Claude Desktop for debugging our MCP
+For more details, see the [MCP Inspector GitHub repository](https://github.com/modelcontextprotocol/inspector).
 
-You can use Claude Desktop to debug MCP tool execution by connecting to your local MCP server:
+</details>
 
-1. First, build and run your MCP server:
+### Integration with Claude Desktop
+
+<details>
+<summary>Click to expand Claude Desktop integration</summary>
+
+Test your MCP server directly with Claude:
+
+1. Build and run your server:
 
    ```bash
    npm run build
    node dist/index.js
    ```
 
-2. Configure Claude Desktop by editing its configuration file directly:
+2. Configure Claude Desktop:
 
    ```bash
-   # Open the configuration file in your editor
    nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
    ```
 
-3. Add or update the MCP configuration in the file:
+3. Add the MCP configuration:
 
    ```json
    {
@@ -125,9 +144,7 @@ You can use Claude Desktop to debug MCP tool execution by connecting to your loc
    }
    ```
 
-4. Save the file and restart Claude Desktop.
-
-5. Claude will now have access to your MCP tools. Test them with queries like:
+4. Restart Claude Desktop and test with:
    ```
    What time is it right now?
    ```
@@ -136,9 +153,9 @@ You can use Claude Desktop to debug MCP tool execution by connecting to your loc
    Show me my assigned JIRA issues.
    ```
 
-This configuration allows you to test your MCP functionality directly in Claude Desktop while developing.
+</details>
 
-## Integration with Cursor IDE
+## 🔌 Integration with Cursor IDE
 
 Add this MCP server to your Cursor IDE's MCP configuration:
 
@@ -158,66 +175,55 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 }
 ```
 
-## MCP Tools
+## 🧰 Available Tools
 
-### Jira Tools
+### JIRA Tools
 
-#### Get Assigned Issues
-
-- **Tool Name**: `jira_get_assigned_issues`
-- **Parameters**: No params
-- **Returns**: Markdown-formatted list of assigned Jira issues
-
-#### Get Issue
-
-- **Tool Name**: `jira_get_issue`
-- **Parameters**:
-  - `issueKey`: The Jira issue key (e.g., PD-312)
-- **Returns**: Markdown-formatted details of the specified issue
-
-#### Create Task from Issue
-
-- **Tool Name**: `jira_create_task`
-- **Parameters**:
-  - `issueKey`: The Jira issue key (e.g., PD-312)
-- **Returns**: Markdown-formatted task created from the issue
+| Tool                       | Description                                      | Parameters                           | Returns                           |
+| -------------------------- | ------------------------------------------------ | ------------------------------------ | --------------------------------- |
+| `jira_get_assigned_issues` | Retrieves all issues assigned to you             | None                                 | Markdown-formatted list of issues |
+| `jira_get_issue`           | Gets detailed information about a specific issue | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
+| `jira_create_task`         | Creates a local task from a JIRA issue           | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
 
 ### System Time Tools
 
-#### Get System Time
+| Tool              | Description                  | Parameters                                  | Returns                    |
+| ----------------- | ---------------------------- | ------------------------------------------- | -------------------------- |
+| `get_system_time` | Gets the current system time | `format`: (Optional) date-fns format string | Formatted date/time string |
 
-- **Tool Name**: `get_system_time`
-- **Parameters**:
-  - `format`: (Optional) Date format string following date-fns format
-- **Returns**: Current system time formatted according to the specified format
-
-## Development
-
-### Project Structure
+## 📁 Project Structure
 
 ```
-├── src/
-│   ├── features/        # MCP features (JIRA, system time)
-│   ├── server/          # MCP server implementation
-│   ├── shared/          # Shared utilities
-│   └── index.ts         # Main entry point
+src/
+ ├── features/        # MCP features (JIRA, system time)
+ ├── server/          # MCP server implementation
+ ├── shared/          # Shared utilities
+ └── index.ts         # Main entry point
 ```
 
-### Scripts
+### NPM Scripts
 
-- `npm run build` - Build the project
-- `npm run build:prod` - Build the project for production
-- `npm run inspect` - Run with MCP inspector for debugging
-- `npm run cleanup-ports` - Release ports used by the inspector
-- `npm test` - Run tests
+| Command                 | Description                          |
+| ----------------------- | ------------------------------------ |
+| `npm run build`         | Build the project for development    |
+| `npm run build:prod`    | Build the project for production     |
+| `npm run inspect`       | Run with MCP inspector for debugging |
+| `npm run cleanup-ports` | Release ports used by the inspector  |
+| `npm test`              | Run tests                            |
 
-## License
-
-MIT
-
-## Resources
+## 📘 Resources
 
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [MCP Specification](https://spec.modelcontextprotocol.io/specification/)
 - [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
+
+## 📄 License
+
+[MIT](LICENSE) © Stanislav Stepanenko
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for a better developer experience</sub>
+</div>
