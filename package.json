@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist && node esbuild.config.js",
-    "build:prod": "rm -rf dist && node esbuild.config.js --prod",
+    "publish": "npm run build -- --prod && npm publish",
     "test": "jest",
     "inspect": "node inspector.js",
     "cleanup-ports": "kill -9 $(lsof -ti:5175,3002) 2>/dev/null || true && echo 'Ports 5175 and 3002 have been released'"

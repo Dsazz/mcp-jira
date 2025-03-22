@@ -203,13 +203,13 @@ src/
 
 ### NPM Scripts
 
-| Command                 | Description                          |
-| ----------------------- | ------------------------------------ |
-| `npm run build`         | Build the project for development    |
-| `npm run build:prod`    | Build the project for production     |
-| `npm run inspect`       | Run with MCP inspector for debugging |
-| `npm run cleanup-ports` | Release ports used by the inspector  |
-| `npm test`              | Run tests                            |
+| Command                 | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `npm run build`         | Build the project                         |
+| `npm run publish`       | Build and publish package to npm registry |
+| `npm run inspect`       | Run with MCP inspector for debugging      |
+| `npm run cleanup-ports` | Release ports used by the inspector       |
+| `npm test`              | Run tests                                 |
 
 ## 📘 Resources
 
