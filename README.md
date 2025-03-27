@@ -3,7 +3,7 @@
 # 🔗 JIRA MCP Server for Cursor
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
 [![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=Jira&logoColor=white)](https://www.atlassian.com/software/jira)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-blue?style=for-the-badge)](https://modelcontextprotocol.io)
@@ -36,7 +36,7 @@ git clone https://github.com/Dsazz/mcp-jira.git
 cd mcp-jira
 
 # Install dependencies
-npm install
+bun install
 
 # Set up environment variables
 cp .env.example .env
@@ -62,6 +62,25 @@ JIRA_API_TOKEN=your-jira-api-token-here
 
 ## 🛠️ Development Tools
 
+### Code Quality Tools
+
+The project uses [Biome](https://biomejs.dev/) for code formatting and linting, replacing the previous ESLint setup. Biome provides:
+
+- Fast, unified formatting and linting
+- TypeScript-first tooling
+- Zero configuration needed
+- Consistent code style enforcement
+
+To format and lint your code:
+
+```bash
+# Format code
+bun biome format --write .
+
+# Check code for issues
+bun biome check .
+```
+
 ### MCP Inspector
 
 <details>
@@ -71,7 +90,7 @@ The MCP Inspector is a powerful tool for testing and debugging your MCP server.
 
 ```bash
 # Run the inspector (no separate build step needed)
-npm run inspect
+bun run inspect
 ```
 
 The inspector automatically:
@@ -87,7 +106,7 @@ Visit the inspector at http://localhost:5175?proxyPort=3002
 If you encounter port conflicts:
 
 ```bash
-npm run cleanup-ports
+bun run cleanup-ports
 ```
 
 #### Debugging with the Inspector
@@ -110,11 +129,10 @@ For more details, see the [MCP Inspector GitHub repository](https://github.com/m
 
 Test your MCP server directly with Claude:
 
-1. Build and run your server:
+1. Build:
 
    ```bash
-   npm run build  # You must build the project before running it
-   node dist/index.js
+   bun run build  # You must build the project before running it
    ```
 
 2. Configure Claude Desktop:
@@ -129,7 +147,7 @@ Test your MCP server directly with Claude:
    {
      "mcpServers": {
        "JIRA Tools": {
-         "command": "node",
+         "command": "bun", //or "node"
          "args": ["/absolute/path/to/your/project/dist/index.js"],
          "env": {
            "JIRA_USERNAME": "your-jira-username",
@@ -154,7 +172,7 @@ Test your MCP server directly with Claude:
 
 ## 🔌 Integration with Cursor IDE
 
-> **⚠️ Important:** You must build the project with `npm run build` before integrating with Cursor IDE or Claude Desktop.
+> **⚠️ Important:** You must build the project with `bun run build` before integrating with Cursor IDE or Claude Desktop.
 
 Add this MCP server to your Cursor IDE's MCP configuration:
 
@@ -162,7 +180,7 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 {
   "mcpServers": {
     "JIRA Tools": {
-      "command": "node",
+      "command": "bun", // or "node"
       "args": ["/absolute/path/to/your/project/dist/index.js"],
       "env": {
         "JIRA_USERNAME": "your-jira-username",
@@ -204,11 +222,21 @@ src/
 
 | Command                 | Description                               |
 | ----------------------- | ----------------------------------------- |
-| `npm run build`         | Build the project                         |
-| `npm run publish`       | Build and publish package to npm registry |
-| `npm run inspect`       | Run with MCP inspector for debugging      |
-| `npm run cleanup-ports` | Release ports used by the inspector       |
-| `npm test`              | Run tests                                 |
+| `bun run build`         | Build the project                         |
+| `bun run publish`       | Build and publish package to npm registry |
+| `bun run inspect`       | Run with MCP inspector for debugging      |
+| `bun run cleanup-ports` | Release ports used by the inspector       |
+| `bun run test`          | Run tests                                 |
+
+## 📝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Development workflow
+- Branching strategy
+- Commit message format
+- Pull request process
+- Code style guidelines
 
 ## 📘 Resources
 
