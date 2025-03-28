@@ -1,31 +1,35 @@
 #!/usr/bin/env node
+/**
+ * MCP Server Entry Point
+ *
+ * Main entry point for the MCP server application
+ */
+import { config } from "dotenv";
+import { normalizeError } from "@core/errors";
+import { logger } from "@core/logging";
+import { startServer } from "@core/server";
+import { registerFeatures } from "@features/index";
 
-import { config } from 'dotenv';
-import { startServer } from './server';
-import { logger } from './shared';
-
-// Initialize and start the server
-async function init(): Promise<void> {
+/**
+ * Bootstrap the application
+ * Configure environment and start the server
+ */
+async function bootstrap(): Promise<void> {
   try {
-    // Load .env file if it exists
+    // Load environment variables
     config();
+    logger.info("Environment configured", { prefix: "Bootstrap" });
 
-    // Start the server
-    await startServer();
+    // Start the MCP server with feature registration
+    await startServer(registerFeatures);
   } catch (error) {
-    logger.error(error instanceof Error ? error : new Error(String(error)), { 
-      prefix: 'Startup', 
-      isMcp: true 
+    // Basic error handling for bootstrap process
+    logger.error(normalizeError(error), {
+      prefix: "Bootstrap",
     });
     process.exit(1);
   }
 }
 
-// Start the server
-init().catch((error) => {
-  logger.error(error instanceof Error ? error : new Error(String(error)), { 
-    prefix: 'Server', 
-    isMcp: true 
-  });
-  process.exit(1);
-}); 
+// Start the application
+bootstrap();
