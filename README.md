@@ -22,9 +22,6 @@
   - View your assigned issues without leaving your IDE
   - Get detailed information on specific issues with one command
   - Convert JIRA issues into local tasks seamlessly
-- ⏰ **System Time Integration**
-  - Customizable date and time formatting
-  - Locale support via date-fns
 
 ## 🚀 Quick Start
 
@@ -75,10 +72,13 @@ To format and lint your code:
 
 ```bash
 # Format code
-bun biome format --write .
+bun format
 
 # Check code for issues
-bun biome check .
+bun check
+
+# Type check
+bun typecheck
 ```
 
 ### MCP Inspector
@@ -147,7 +147,7 @@ Test your MCP server directly with Claude:
    {
      "mcpServers": {
        "JIRA Tools": {
-         "command": "bun", //or "node"
+         "command": "node", //or "bun"
          "args": ["/absolute/path/to/your/project/dist/index.js"],
          "env": {
            "JIRA_USERNAME": "your-jira-username",
@@ -180,7 +180,7 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 {
   "mcpServers": {
     "JIRA Tools": {
-      "command": "bun", // or "node"
+      "command": "node", // or "bun"
       "args": ["/absolute/path/to/your/project/dist/index.js"],
       "env": {
         "JIRA_USERNAME": "your-jira-username",
@@ -201,32 +201,35 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 | `jira_get_assigned_issues` | Retrieves all issues assigned to you             | None                                 | Markdown-formatted list of issues |
 | `jira_get_issue`           | Gets detailed information about a specific issue | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
 | `jira_create_task`         | Creates a local task from a JIRA issue           | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
-
-### System Time Tools
-
-| Tool              | Description                  | Parameters                                  | Returns                    |
-| ----------------- | ---------------------------- | ------------------------------------------- | -------------------------- |
-| `get_system_time` | Gets the current system time | `format`: (Optional) date-fns format string | Formatted date/time string |
+| `get_system_time`          | Retrieves the current system time                | `format`: Optional date format       | Formatted date/time string        |
 
 ## 📁 Project Structure
 
 ```
-src/
- ├── features/        # MCP features (JIRA, system time)
- ├── server/          # MCP server implementation
- ├── shared/          # Shared utilities
- └── index.ts         # Main entry point
+ src/
+  ├── core/          # Core functionality and configurations
+  ├── features/      # Feature implementations
+  │   └── jira/      # JIRA API integration
+  │       ├── api/         # JIRA API client
+  │       ├── formatters/  # Response formatters
+  │       └── tools/       # MCP tool implementations
+  └── test/          # Test utilities
 ```
 
 ### NPM Scripts
 
-| Command                 | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `bun run build`         | Build the project                         |
-| `bun run publish`       | Build and publish package to npm registry |
-| `bun run inspect`       | Run with MCP inspector for debugging      |
-| `bun run cleanup-ports` | Release ports used by the inspector       |
-| `bun run test`          | Run tests                                 |
+| Command             | Description                                        |
+| ------------------- | -------------------------------------------------- |
+| `bun dev`           | Run the server in development mode with hot reload |
+| `bun build`         | Build the project for production                   |
+| `bun start`         | Start the production server                        |
+| `bun format`        | Format code using Biome                            |
+| `bun lint`          | Lint code using Biome                              |
+| `bun check`         | Run Biome checks on code                           |
+| `bun typecheck`     | Run TypeScript type checking                       |
+| `bun test`          | Run tests                                          |
+| `bun inspect`       | Start the MCP Inspector for debugging              |
+| `bun cleanup-ports` | Clean up ports used by the development server      |
 
 ## 📝 Contributing
 

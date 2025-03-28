@@ -1,8 +1,8 @@
 /**
- * Formatter for JIRA issues to markdown
+ * Formatter for single JIRA issue to markdown
  */
-import { Issue } from '../api/types';
-import { Formatter } from './formatter.interface';
+import type { Issue } from "../api/";
+import type { Formatter } from "./formatter.interface";
 
 /**
  * Formats a single JIRA issue into markdown
@@ -10,62 +10,52 @@ import { Formatter } from './formatter.interface';
  */
 export class IssueFormatter implements Formatter<Issue> {
   /**
-   * Format an issue to markdown
+   * Format a single issue to markdown
    */
   format(issue: Issue): string {
-    // Build basic issue information
-    let markdown = `# ${issue.key}: ${issue.fields.summary}\n\n`;
-    
-    // Add status and priority if available
-    const metaItems: string[] = [];
-    
-    if (issue.fields.status) {
-      metaItems.push(`**Status**: ${issue.fields.status.name}`);
-    }
-    
-    if (issue.fields.priority) {
-      metaItems.push(`**Priority**: ${issue.fields.priority.name}`);
-    }
-    
-    if (issue.fields.assignee) {
-      metaItems.push(`**Assignee**: ${issue.fields.assignee.displayName}`);
-    }
-    
-    if (metaItems.length > 0) {
-      markdown += metaItems.join(' | ') + '\n\n';
-    }
-    
+    const fields = issue.fields || {};
+    let markdown = `# ${issue.key}: ${fields.summary || "No Summary"}\n\n`;
+
+    // Add status, priority, and assignee info if available
+    const statusText = fields.status?.name || "Unknown";
+    const priorityText = fields.priority?.name || "None";
+    const assigneeText = fields.assignee?.displayName || "Unassigned";
+
+    markdown += `**Status:** ${statusText}\n`;
+    markdown += `**Priority:** ${priorityText}\n`;
+    markdown += `**Assignee:** ${assigneeText}\n\n`;
+
     // Add description if available
-    if (issue.fields.description) {
-      markdown += `## Description\n\n${issue.fields.description}\n\n`;
+    if (fields.description) {
+      markdown += `## Description\n\n${fields.description}\n\n`;
     }
-    
+
     // Add labels if available
-    if (issue.fields.labels && issue.fields.labels.length > 0) {
-      markdown += `## Labels\n\n${issue.fields.labels.join(', ')}\n\n`;
+    if (Array.isArray(fields.labels) && fields.labels.length > 0) {
+      markdown += `## Labels\n\n${fields.labels.join(", ")}\n\n`;
     }
-    
+
     // Add dates
-    if (issue.fields.created || issue.fields.updated) {
-      markdown += '## Dates\n\n';
-      
-      if (issue.fields.created) {
-        const created = new Date(issue.fields.created);
+    if (fields.created || fields.updated) {
+      markdown += "## Dates\n\n";
+
+      if (fields.created) {
+        const created = new Date(fields.created);
         markdown += `**Created**: ${created.toLocaleString()}\n\n`;
       }
-      
-      if (issue.fields.updated) {
-        const updated = new Date(issue.fields.updated);
+
+      if (fields.updated) {
+        const updated = new Date(fields.updated);
         markdown += `**Updated**: ${updated.toLocaleString()}\n\n`;
       }
     }
-    
+
     // Add link to JIRA
     if (issue.self) {
-      const baseUrl = issue.self.split('/rest/')[0];
+      const baseUrl = issue.self.split("/rest/")[0];
       markdown += `---\n\n[View in JIRA](${baseUrl}/browse/${issue.key})`;
     }
-    
+
     return markdown;
   }
-} 
+}

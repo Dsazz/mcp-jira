@@ -1,9 +1,8 @@
+import type { Issue } from "../api/";
 /**
  * Formatter for lists of JIRA issues to markdown
  */
-import { Issue } from '../api/types';
-import { Formatter } from './formatter.interface';
-
+import type { Formatter } from "./formatter.interface";
 /**
  * Formats a list of JIRA issues into markdown
  * Implements the Formatter interface for arrays of Issue objects
@@ -16,29 +15,30 @@ export class IssueListFormatter implements Formatter<Issue[]> {
    */
   format(issues: Issue[]): string {
     // Note: The caller should check for empty arrays before calling this function
-    let markdown = `# Your Assigned Issues\n\n`;
+    let markdown = "# Your Assigned Issues\n\n";
     markdown += `${issues.length} issue(s) assigned to you\n\n`;
-    
+
     // Create a table
-    markdown += '| Key | Summary | Status | Priority | Updated |\n';
-    markdown += '| --- | ------- | ------ | -------- | ------- |\n';
-    
-    issues.forEach(issue => {
+    markdown += "| Key | Summary | Status | Priority | Updated |\n";
+    markdown += "| --- | ------- | ------ | -------- | ------- |\n";
+
+    for (const issue of issues) {
       const key = issue.key;
-      const summary = issue.fields.summary;
-      const status = issue.fields.status?.name || 'Unknown';
-      const priority = issue.fields.priority?.name || 'None';
-      
+      const fields = issue.fields || {};
+      const summary = fields.summary || "No Summary";
+      const status = fields.status?.name || "Unknown";
+      const priority = fields.priority?.name || "None";
+
       // Format the updated date if it exists
-      let updated = 'N/A';
-      if (issue.fields.updated) {
-        const updatedDate = new Date(issue.fields.updated);
+      let updated = "N/A";
+      if (fields.updated) {
+        const updatedDate = new Date(fields.updated);
         updated = updatedDate.toLocaleDateString();
       }
-      
+
       markdown += `| ${key} | ${summary} | ${status} | ${priority} | ${updated} |\n`;
-    });
-    
+    }
+
     return markdown;
   }
-} 
+}

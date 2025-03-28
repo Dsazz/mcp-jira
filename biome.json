@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "vcs": { "enabled": true, "clientKind": "git" },
   "formatter": {
     "enabled": true,
@@ -17,23 +17,14 @@
         "noUnusedVariables": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "error"
       },
       "style": {
         "useConst": "error"
       }
     }
   },
-  "overrides": [
-    {
-      "include": ["**/__tests__/**", "**/__mocks__/**"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noExplicitAny": "off"
-          }
-        }
-      }
-    }
-  ]
+  "files": {
+    "ignore": ["package.json"]
+  }
 }

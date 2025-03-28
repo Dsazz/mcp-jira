@@ -1,34 +1,35 @@
 #!/usr/bin/env node
-
-import { config } from 'dotenv';
-import { startServer } from './server';
-import { logger } from './shared/logging';
-import { normalizeError } from './shared/errors';
+/**
+ * MCP Server Entry Point
+ *
+ * Main entry point for the MCP server application
+ */
+import { config } from "dotenv";
+import { normalizeError } from "@core/errors";
+import { logger } from "@core/logging";
+import { startServer } from "@core/server";
+import { registerFeatures } from "@features/index";
 
 /**
- * Configure environment variables and start the application
+ * Bootstrap the application
+ * Configure environment and start the server
  */
 async function bootstrap(): Promise<void> {
   try {
     // Load environment variables
     config();
-    logger.info('Environment configured', { prefix: 'Bootstrap' });
-    
-    // Start the MCP server (which handles its own lifecycle)
-    await startServer();
+    logger.info("Environment configured", { prefix: "Bootstrap" });
+
+    // Start the MCP server with feature registration
+    await startServer(registerFeatures);
   } catch (error) {
     // Basic error handling for bootstrap process
-    logger.error(normalizeError(error), { 
-      prefix: 'Bootstrap' 
+    logger.error(normalizeError(error), {
+      prefix: "Bootstrap",
     });
     process.exit(1);
   }
 }
 
 // Start the application
-bootstrap().catch(error => {
-  logger.error(normalizeError(error), { 
-    prefix: 'Bootstrap' 
-  });
-  process.exit(1);
-}); 
+bootstrap();
