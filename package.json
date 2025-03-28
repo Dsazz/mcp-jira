@@ -1,6 +1,6 @@
 {
   "name": "mcp-server",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Model Context Protocol server with TypeScript, Bun, and Biome",
   "type": "module",
   "main": "dist/index.js",
