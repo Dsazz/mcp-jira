@@ -1,5 +1,5 @@
 {
-  "name": "mcp-server",
+  "name": "jira-mcp-server",
   "version": "0.2.0",
   "description": "JIRA MCP Server",
   "type": "module",
