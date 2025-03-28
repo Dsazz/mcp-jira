@@ -201,7 +201,6 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 | `jira_get_assigned_issues` | Retrieves all issues assigned to you             | None                                 | Markdown-formatted list of issues |
 | `jira_get_issue`           | Gets detailed information about a specific issue | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
 | `jira_create_task`         | Creates a local task from a JIRA issue           | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
-| `get_system_time`          | Retrieves the current system time                | `format`: Optional date format       | Formatted date/time string        |
 
 ## 📁 Project Structure
 
