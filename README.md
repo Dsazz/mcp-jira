@@ -52,6 +52,7 @@ JIRA_API_TOKEN=your-jira-api-token-here
 
 > **🔑 Important Note About JIRA API Tokens**
 >
+> - A JIRA API token can be generated at [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
 > - Tokens may contain special characters, including the `=` sign
 > - Place the token on a single line in the `.env` file
 > - Do not add quotes around the token value
