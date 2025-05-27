@@ -162,10 +162,6 @@ Test your MCP server directly with Claude:
 
 4. Restart Claude Desktop and test with:
    ```
-   What time is it right now?
-   ```
-   or
-   ```
    Show me my assigned JIRA issues.
    ```
 
