@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.3.1] - 2025-05-28
+
+### Added
+
+- **💬 JIRA Issue Comments Retrieval**: New jira_get_issue_comments tool with progressive disclosure parameters, advanced filtering, and rich formatting
+- **🎨 Comments Formatting System**: Structured markdown display with ADF parsing and context-aware formatting
+
+### Improved
+
+- **Test Coverage**: Added 37 comprehensive test cases (230 total tests passing)
+- **Code Organization**: New formatters and handlers following existing patterns
+
+### Technical
+
+- **Progressive Disclosure Pattern**: Successfully implemented and documented for reuse
+- **Architectural Consistency**: Maintained consistency with existing tool patterns
+
 ## [0.3.0] - 2025-05-28
 
 ### Added
