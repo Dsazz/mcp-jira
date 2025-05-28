@@ -4,6 +4,8 @@
  * Contains core data structures representing JIRA domain objects
  */
 
+import type { ADFNode } from "../utils/adf-parser";
+
 /**
  * Basic JIRA issue representation
  */
@@ -19,7 +21,7 @@ export interface Issue {
  */
 export interface IssueFields {
   summary?: string;
-  description?: string;
+  description?: ADFNode | string;
   status?: {
     name: string;
     statusCategory?: {

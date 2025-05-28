@@ -3,6 +3,7 @@
  */
 import type { Issue } from "../api/";
 import type { Formatter } from "./formatter.interface";
+import { parseADF } from "../utils/adf-parser";
 
 /**
  * Formats a single JIRA issue into markdown
@@ -25,9 +26,10 @@ export class IssueFormatter implements Formatter<Issue> {
     markdown += `**Priority:** ${priorityText}\n`;
     markdown += `**Assignee:** ${assigneeText}\n\n`;
 
-    // Add description if available
+    // Add description if available - now supports both ADF and string formats
     if (fields.description) {
-      markdown += `## Description\n\n${fields.description}\n\n`;
+      const descriptionText = parseADF(fields.description);
+      markdown += `## Description\n\n${descriptionText}\n\n`;
     }
 
     // Add labels if available

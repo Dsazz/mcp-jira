@@ -19,9 +19,21 @@
 ## ✨ Features
 
 - 📋 **Access JIRA Directly From Cursor**
+
   - View your assigned issues without leaving your IDE
   - Get detailed information on specific issues with one command
   - Convert JIRA issues into local tasks seamlessly
+
+- 🔍 **Powerful Issue Search**
+
+  - Search issues using JQL queries or beginner-friendly parameters
+  - Support for text search, project filtering, status filtering, and assignee filtering
+  - Rich markdown formatting with issue previews and actionable links
+
+- 📝 **Rich Description Parsing**
+  - Automatic conversion of JIRA's Atlassian Document Format (ADF) to readable markdown
+  - Support for formatted text, lists, code blocks, headers, and links
+  - Backward compatibility with plain text descriptions
 
 ## 🚀 Quick Start
 
@@ -198,6 +210,27 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 | `jira_get_assigned_issues` | Retrieves all issues assigned to you             | None                                 | Markdown-formatted list of issues |
 | `jira_get_issue`           | Gets detailed information about a specific issue | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
 | `jira_create_task`         | Creates a local task from a JIRA issue           | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
+| `search_jira_issues`       | Search JIRA issues with JQL or helper parameters | See search parameters below          | Markdown-formatted search results |
+
+#### Search Parameters
+
+The `search_jira_issues` tool supports two modes:
+
+**Expert Mode (JQL)**:
+
+- `jql`: Direct JQL query string (e.g., `"project = PROJ AND status = Open"`)
+
+**Beginner Mode (Helper Parameters)**:
+
+- `assignedToMe`: Boolean - Show only issues assigned to current user
+- `project`: String - Filter by project key
+- `status`: String or Array - Filter by status(es) (e.g., `"Open"` or `["Open", "In Progress"]`)
+- `text`: String - Search in summary and description fields
+
+**Common Options**:
+
+- `maxResults`: Number (1-50, default: 25) - Limit number of results
+- `fields`: Array - Specify which fields to retrieve (optional)
 
 ## 📁 Project Structure
 

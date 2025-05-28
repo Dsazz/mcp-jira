@@ -6,6 +6,8 @@ import type { JiraClient } from "../api/jira.client.impl";
 import { CreateTaskHandler } from "./handlers/create-task.handler";
 import { GetAssignedIssuesHandler } from "./handlers/get-assigned-issues.handler";
 import { GetIssueHandler } from "./handlers/get-issue.handler";
+import { SearchIssuesHandler } from "./handlers/search-issues.handler";
+
 /**
  * Factory function to create all JIRA tool handlers
  *
@@ -17,5 +19,6 @@ export function createJiraTools(client: JiraClient) {
     getIssue: new GetIssueHandler(client),
     getAssignedIssues: new GetAssignedIssuesHandler(client),
     createTask: new CreateTaskHandler(client),
+    searchIssues: new SearchIssuesHandler(client),
   };
 }

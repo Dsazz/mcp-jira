@@ -8,7 +8,7 @@ import type { ToolConfig } from "@core/tools";
 import { JiraClient } from "./api/jira.client.impl";
 import { JiraConfig } from "./api/jira.config.types";
 import { createJiraTools } from "./tools";
-import { issueKeySchema } from "./tools/utils/schemas";
+import { issueKeySchema, searchJiraIssuesBaseSchema } from "./tools/utils/schemas";
 
 // Logger instance
 const logger = getLogger("jira");
@@ -49,6 +49,12 @@ export function registerTools(server: McpServer): void {
         description: "Creates a local task from a JIRA issue",
         params: { issueKey: issueKeySchema },
         handler: (args: unknown) => jiraTools.createTask.handle(args),
+      },
+      {
+        name: "search_jira_issues",
+        description: "Search JIRA issues using JQL queries or helper parameters. Supports both expert JQL and beginner-friendly filters.",
+        params: searchJiraIssuesBaseSchema.shape,
+        handler: (args: unknown) => jiraTools.searchIssues.handle(args),
       },
     ];
 
