@@ -16,6 +16,32 @@ export const issueKeySchema = z
   .regex(/^[A-Z]+-\d+$/, "Issue key must be in the format PROJECT-123");
 
 /**
+ * Schema for get issue comments parameters
+ * Implements progressive disclosure approach from creative phase decisions
+ */
+export const getIssueCommentsSchema = z.object({
+  // Core parameters (required/essential)
+  issueKey: issueKeySchema,
+  
+  // Basic options (most common use cases)  
+  maxComments: z.number().int().min(1).max(100).optional().default(10),
+  
+  // Advanced options (power user features)
+  includeInternal: z.boolean().optional().default(false),
+  orderBy: z.enum(['created', 'updated']).optional().default('created'),
+  authorFilter: z.string().min(1).optional(),
+  dateRange: z.object({
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+  }).optional(),
+});
+
+/**
+ * Type for get issue comments parameters
+ */
+export type GetIssueCommentsParams = z.infer<typeof getIssueCommentsSchema>;
+
+/**
  * Base schema for search parameters (without refinement)
  * Used for MCP tool parameter definition
  */

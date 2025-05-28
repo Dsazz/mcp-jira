@@ -4,10 +4,6 @@
  * Handles retrieving a specific JIRA issue by key
  */
 import { z } from "zod";
-import {
-  createErrorResponse,
-  createSuccessResponse,
-} from "@core/responses";
 import { BaseToolHandler } from "@core/tools";
 import { formatZodError } from "@core/utils/validation";
 import type { JiraClient } from "../../api/jira.client.impl";
@@ -68,7 +64,16 @@ export class GetIssueHandler extends BaseToolHandler<
     params: z.infer<typeof getIssueParamsSchema>,
   ): Promise<string> {
     try {
-      const { issueKey } = params;
+      // Validate parameters
+      const result = getIssueParamsSchema.safeParse(params);
+      if (!result.success) {
+        const errorMessage = `Invalid issue parameters: ${formatZodError(
+          result.error,
+        )}`;
+        throw new Error(errorMessage);
+      }
+
+      const { issueKey } = result.data;
 
       this.logger.info(`Getting JIRA issue: ${issueKey}`);
 
@@ -78,76 +83,13 @@ export class GetIssueHandler extends BaseToolHandler<
       }
 
       // Get the issue with all necessary fields
-      const issue = await this.client.getIssue(issueKey);
+      const issue = await this.client.getIssue(issueKey, ISSUE_FIELDS);
 
       // Format the issue using the formatter
       return this.formatter.format(issue);
     } catch (error) {
       this.logger.error(`Failed to get issue: ${error}`);
       throw error;
-    }
-  }
-
-  /**
-   * Handle the request for getting a JIRA issue
-   *
-   * @param params - Request parameters
-   * @returns Response object with success/error status
-   */
-  async handler(params: unknown) {
-    console.info(
-      `[JIRA:Get Issue] Getting issue with key: ${
-        typeof params === "object" && params !== null && "issueKey" in params
-          ? String(params.issueKey)
-          : "(none)"
-      }`,
-    );
-
-    try {
-      // Validate and parse parameters
-      const result = getIssueParamsSchema.safeParse(params);
-      if (!result.success) {
-        const errorMessage = `Invalid issue parameters: ${formatZodError(
-          result.error,
-        )}`;
-        throw new Error(errorMessage);
-      }
-
-      // Extract validated parameters
-      const { issueKey } = result.data;
-
-      // Ensure client is available
-      if (!this.client) {
-        throw new Error("JIRA client not initialized");
-      }
-
-      // Fetch issue from JIRA
-      const issue = await this.client.getIssue(issueKey, ISSUE_FIELDS);
-
-      // Format the issue for display using the formatter
-      const formattedIssue = this.formatter.format(issue);
-
-      // Return successful response
-      return createSuccessResponse({
-        formattedText: formattedIssue,
-      });
-    } catch (error) {
-      console.error(
-        `[JIRA:Get Issue] Failed to get issue: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-      console.error(
-        `[JIRA:Get Issue:${
-          error instanceof Error ? error : String(error)
-        }] Tool execution failed`,
-      );
-
-      return createErrorResponse(
-        `Failed to get issue: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
     }
   }
 }

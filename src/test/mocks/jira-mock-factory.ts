@@ -1,0 +1,357 @@
+/**
+ * JIRA Mock Factory
+ * Centralized mock data generation for JIRA MCP Server testing
+ * Provides realistic test data and scenarios for comprehensive testing
+ */
+
+import type {
+  Issue,
+  User,
+  SearchResult
+} from '../../features/jira/api/jira.models.types';
+
+import type { ADFNode } from '../../features/jira/utils/adf-parser';
+
+export interface ADFDocument extends ADFNode {
+  version: number;
+  type: 'doc';
+}
+
+export interface MockProject {
+  id: string;
+  key: string;
+  name: string;
+  projectTypeKey: string;
+  projectCategory?: {
+    id: string;
+    name: string;
+    description: string;
+  };
+}
+
+export interface MockScenario {
+  name: string;
+  description: string;
+  data: {
+    issues?: Issue[];
+    projects?: MockProject[];
+    users?: User[];
+    searchResults?: SearchResult;
+  };
+}
+
+export class JiraMockFactory {
+  private static instance: JiraMockFactory;
+  
+  static getInstance(): JiraMockFactory {
+    if (!JiraMockFactory.instance) {
+      JiraMockFactory.instance = new JiraMockFactory();
+    }
+    return JiraMockFactory.instance;
+  }
+
+  // ADF Content Generation Utilities
+  createADFParagraph(text: string): ADFNode {
+    return {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text
+        }
+      ]
+    };
+  }
+
+  createADFCodeBlock(language: string, code: string): ADFNode {
+    return {
+      type: 'codeBlock',
+      attrs: {
+        language
+      },
+      content: [
+        {
+          type: 'text',
+          text: code
+        }
+      ]
+    };
+  }
+
+  createADFList(items: string[], ordered = false): ADFNode {
+    return {
+      type: ordered ? 'orderedList' : 'bulletList',
+      content: items.map(item => ({
+        type: 'listItem',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: item
+              }
+            ]
+          }
+        ]
+      }))
+    };
+  }
+
+  createComplexADFDescription(): ADFDocument {
+    return {
+      version: 1,
+      type: 'doc',
+      content: [
+        this.createADFParagraph('This is a comprehensive bug report with multiple formatting elements.'),
+        this.createADFCodeBlock('javascript', `
+function buggyFunction() {
+  // This function has a memory leak
+  let data = [];
+  setInterval(() => {
+    data.push(new Array(1000).fill('memory'));
+  }, 100);
+}
+        `.trim()),
+        this.createADFParagraph('Steps to reproduce:'),
+        this.createADFList([
+          'Navigate to the dashboard',
+          'Click on the "Generate Report" button',
+          'Wait for 30 seconds',
+          'Observe memory usage spike'
+        ], true),
+        this.createADFParagraph('Expected: Memory usage should remain stable'),
+        this.createADFParagraph('Actual: Memory usage increases continuously')
+      ]
+    };
+  }
+
+  // Mock Data Generators
+  createMockUser(overrides: Partial<User> = {}): User {
+    const defaults: User = {
+      accountId: `user-${Math.random().toString(36).substr(2, 9)}`,
+      displayName: 'John Developer',
+      emailAddress: 'john.developer@company.com',
+      avatarUrls: {
+        '16x16': 'https://avatar.atlassian.com/16x16.png',
+        '24x24': 'https://avatar.atlassian.com/24x24.png',
+        '32x32': 'https://avatar.atlassian.com/32x32.png',
+        '48x48': 'https://avatar.atlassian.com/48x48.png'
+      }
+    };
+    return { ...defaults, ...overrides };
+  }
+
+  createMockProject(overrides: Partial<MockProject> = {}): MockProject {
+    const defaults: MockProject = {
+      id: `proj-${Math.random().toString(36).substr(2, 9)}`,
+      key: 'TEST',
+      name: 'Test Project',
+      projectTypeKey: 'software',
+      projectCategory: {
+        id: '10001',
+        name: 'Development',
+        description: 'Software development projects'
+      }
+    };
+    return { ...defaults, ...overrides };
+  }
+
+  createMockIssue(overrides: Partial<Issue> = {}): Issue {
+    const issueId = `issue-${Math.random().toString(36).substr(2, 9)}`;
+    const defaults: Issue = {
+      id: issueId,
+      key: `TEST-${Math.floor(Math.random() * 1000)}`,
+      self: `https://company.atlassian.net/rest/api/3/issue/${issueId}`,
+      fields: {
+        summary: 'Sample issue for testing',
+        description: this.createComplexADFDescription(),
+        status: {
+          name: 'To Do',
+          statusCategory: {
+            name: 'To Do',
+            colorName: 'blue-gray'
+          }
+        },
+        priority: {
+          name: 'Medium'
+        },
+        assignee: this.createMockUser({
+          displayName: 'Jane Assignee',
+          emailAddress: 'jane.assignee@company.com'
+        }),
+        reporter: this.createMockUser({
+          displayName: 'Bob Reporter', 
+          emailAddress: 'bob.reporter@company.com'
+        }),
+        created: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+        updated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+        labels: ['testing', 'mock-data']
+      }
+    };
+    return { ...defaults, ...overrides };
+  }
+
+  createMockSearchResult(overrides: Partial<SearchResult> = {}): SearchResult {
+    const issues = Array.from({ length: 5 }, () => this.createMockIssue());
+    const defaults: SearchResult = {
+      startAt: 0,
+      maxResults: 50,
+      total: issues.length,
+      issues
+    };
+    return { ...defaults, ...overrides };
+  }
+
+  // Pre-configured Scenarios
+  getScenario(name: string): MockScenario | undefined {
+    const scenarios = this.getAllScenarios();
+    return scenarios.find(scenario => scenario.name === name);
+  }
+
+  getAllScenarios(): MockScenario[] {
+    return [
+      {
+        name: 'empty-project',
+        description: 'Empty project with no issues',
+        data: {
+          projects: [this.createMockProject({ name: 'Empty Project', key: 'EMPTY' })],
+          issues: [],
+          searchResults: this.createMockSearchResult({ issues: [], total: 0 })
+        }
+      },
+      {
+        name: 'single-bug',
+        description: 'Single critical bug issue',
+        data: {
+          issues: [
+            this.createMockIssue({
+              fields: {
+                ...this.createMockIssue().fields,
+                summary: 'Critical memory leak in dashboard',
+                priority: { name: 'Critical' },
+                status: {
+                  name: 'In Progress',
+                  statusCategory: { name: 'In Progress', colorName: 'yellow' }
+                }
+              }
+            })
+          ]
+        }
+      },
+      {
+        name: 'mixed-issues',
+        description: 'Mix of different issue types and statuses',
+        data: {
+          issues: [
+            this.createMockIssue({
+              fields: {
+                ...this.createMockIssue().fields,
+                summary: 'Add dark mode support',
+                priority: { name: 'Medium' }
+              }
+            }),
+            this.createMockIssue({
+              fields: {
+                ...this.createMockIssue().fields,
+                summary: 'Fix login validation bug',
+                priority: { name: 'High' },
+                status: {
+                  name: 'Done',
+                  statusCategory: { name: 'Done', colorName: 'green' }
+                }
+              }
+            }),
+            this.createMockIssue({
+              fields: {
+                ...this.createMockIssue().fields,
+                summary: 'Research new authentication methods',
+                priority: { name: 'Low' }
+              }
+            })
+          ]
+        }
+      },
+      {
+        name: 'large-result-set',
+        description: 'Large search result set for pagination testing',
+        data: {
+          searchResults: this.createMockSearchResult({
+            startAt: 0,
+            maxResults: 25,
+            total: 150,
+            issues: Array.from({ length: 25 }, (_, i) => 
+              this.createMockIssue({
+                key: `LARGE-${i + 1}`,
+                fields: {
+                  ...this.createMockIssue().fields,
+                  summary: `Issue ${i + 1} - Testing pagination`
+                }
+              })
+            )
+          })
+        }
+      },
+      {
+        name: 'complex-adf-content',
+        description: 'Issues with complex ADF descriptions for parser testing',
+        data: {
+          issues: [
+            this.createMockIssue({
+              fields: {
+                ...this.createMockIssue().fields,
+                summary: 'Complex formatting issue',
+                description: {
+                  version: 1,
+                  type: 'doc',
+                  content: [
+                    this.createADFParagraph('This issue demonstrates complex ADF formatting.'),
+                    this.createADFCodeBlock('typescript', `
+interface ComplexType {
+  id: string;
+  data: {
+    nested: {
+      values: Array<string | number>;
+    };
+  };
+}
+                    `.trim()),
+                    this.createADFList([
+                      'First nested item',
+                      'Second nested item with more detail',
+                      'Third item with special characters: !@#$%^&*()'
+                    ]),
+                    this.createADFParagraph('Final paragraph with **bold** and *italic* text.')
+                  ]
+                } as ADFDocument
+              }
+            })
+          ]
+        }
+      }
+    ];
+  }
+
+  // Quick access methods for common test patterns
+  createEmptyResponse() {
+    return this.getScenario('empty-project');
+  }
+
+  createSingleIssueResponse() {
+    return this.getScenario('single-bug');
+  }
+
+  createMultipleIssuesResponse() {
+    return this.getScenario('mixed-issues');
+  }
+
+  createLargeDatasetResponse() {
+    return this.getScenario('large-result-set');
+  }
+
+  createComplexADFResponse() {
+    return this.getScenario('complex-adf-content');
+  }
+}
+
+export const mockFactory = JiraMockFactory.getInstance(); 

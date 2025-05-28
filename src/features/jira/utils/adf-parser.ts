@@ -17,6 +17,15 @@ export interface ADFNode {
 }
 
 /**
+ * ADF Document structure (top-level document with version)
+ */
+export interface ADFDocument extends ADFNode {
+  type: 'doc';
+  version: number;
+  content: ADFNode[];
+}
+
+/**
  * Text mark for formatting (bold, italic, code, etc.)
  */
 export interface ADFMark {

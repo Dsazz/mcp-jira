@@ -8,7 +8,7 @@ import type { ToolConfig } from "@core/tools";
 import { JiraClient } from "./api/jira.client.impl";
 import { JiraConfig } from "./api/jira.config.types";
 import { createJiraTools } from "./tools";
-import { issueKeySchema, searchJiraIssuesBaseSchema } from "./tools/utils/schemas";
+import { issueKeySchema, searchJiraIssuesBaseSchema, getIssueCommentsSchema } from "./tools/utils/schemas";
 
 // Logger instance
 const logger = getLogger("jira");
@@ -37,6 +37,13 @@ export function registerTools(server: McpServer): void {
           "Retrieves detailed information about a specific JIRA issue",
         params: { issueKey: issueKeySchema },
         handler: (args: unknown) => jiraTools.getIssue.handle(args),
+      },
+      {
+        name: "jira_get_issue_comments",
+        description:
+          "Retrieves comments for a specific JIRA issue with configurable quantity and filtering options",
+        params: getIssueCommentsSchema.shape,
+        handler: (args: unknown) => jiraTools.getIssueComments.handle(args),
       },
       {
         name: "jira_get_assigned_issues",

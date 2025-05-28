@@ -205,12 +205,47 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 
 ### JIRA Tools
 
-| Tool                       | Description                                      | Parameters                           | Returns                           |
-| -------------------------- | ------------------------------------------------ | ------------------------------------ | --------------------------------- |
-| `jira_get_assigned_issues` | Retrieves all issues assigned to you             | None                                 | Markdown-formatted list of issues |
-| `jira_get_issue`           | Gets detailed information about a specific issue | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
-| `jira_create_task`         | Creates a local task from a JIRA issue           | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
-| `search_jira_issues`       | Search JIRA issues with JQL or helper parameters | See search parameters below          | Markdown-formatted search results |
+| Tool                       | Description                                                       | Parameters                           | Returns                           |
+| -------------------------- | ----------------------------------------------------------------- | ------------------------------------ | --------------------------------- |
+| `jira_get_assigned_issues` | Retrieves all issues assigned to you                              | None                                 | Markdown-formatted list of issues |
+| `jira_get_issue`           | Gets detailed information about a specific issue                  | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
+| `jira_get_issue_comments`  | Retrieves comments for a specific issue with configurable options | See comment parameters below         | Markdown-formatted comments       |
+| `jira_create_task`         | Creates a local task from a JIRA issue                            | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
+| `search_jira_issues`       | Search JIRA issues with JQL or helper parameters                  | See search parameters below          | Markdown-formatted search results |
+
+#### Comment Parameters
+
+The `jira_get_issue_comments` tool supports progressive disclosure with these parameters:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+
+**Basic Options**:
+
+- `maxComments`: Number (1-100, default: 10) - Maximum number of comments to retrieve
+- `orderBy`: String (`"created"` or `"updated"`, default: `"created"`) - Sort order for comments
+
+**Advanced Options**:
+
+- `includeInternal`: Boolean (default: false) - Include internal/restricted comments
+- `authorFilter`: String - Filter comments by author name or email
+- `dateRange`: Object - Filter by date range:
+  - `from`: String (ISO date) - Start date
+  - `to`: String (ISO date) - End date
+
+**Examples**:
+
+```
+# Basic usage - get 10 most recent comments
+jira_get_issue_comments PROJ-123
+
+# Get more comments with specific ordering
+jira_get_issue_comments PROJ-123 maxComments:25 orderBy:"updated"
+
+# Advanced filtering
+jira_get_issue_comments PROJ-123 authorFilter:"john.doe" includeInternal:true
+```
 
 #### Search Parameters
 

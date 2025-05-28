@@ -4,7 +4,7 @@
  * Contains core data structures representing JIRA domain objects
  */
 
-import type { ADFNode } from "../utils/adf-parser";
+import type { ADFNode, ADFDocument } from "../utils/adf-parser";
 
 /**
  * Basic JIRA issue representation
@@ -12,32 +12,32 @@ import type { ADFNode } from "../utils/adf-parser";
 export interface Issue {
   id: string;
   key: string;
-  self: string;
-  fields?: IssueFields;
+  self: string | null;
+  fields?: IssueFields | null;
 }
 
 /**
  * Issue fields structure
  */
 export interface IssueFields {
-  summary?: string;
-  description?: ADFNode | string;
+  summary?: string | null;
+  description?: ADFDocument | ADFNode | string | null;
   status?: {
-    name: string;
+    name: string | null;
     statusCategory?: {
-      name: string;
-      colorName: string;
+      name: string | null;
+      colorName: string | null;
     };
-  };
+  } | null;
   priority?: {
-    name: string;
-    iconUrl?: string;
-  };
-  assignee?: User;
-  reporter?: User;
-  created?: string;
-  updated?: string;
-  labels?: string[];
+    name: string | null;
+    iconUrl?: string | null;
+  } | null;
+  assignee?: User | null;
+  reporter?: User | null;
+  created?: string | null;
+  updated?: string | null;
+  labels?: string[] | null;
   [key: string]: unknown;
 }
 
@@ -45,12 +45,50 @@ export interface IssueFields {
  * JIRA user representation
  */
 export interface User {
-  displayName: string;
-  emailAddress?: string;
+  displayName: string | null;
+  emailAddress?: string | null;
   accountId: string;
   avatarUrls?: {
     [key: string]: string;
-  };
+  } | null;
+}
+
+/**
+ * JIRA comment representation
+ */
+export interface Comment {
+  id: string;
+  self: string;
+  author: User;
+  body: ADFDocument | ADFNode | string | null;
+  updateAuthor?: User | null;
+  created: string;
+  updated: string;
+  visibility?: {
+    type: string;
+    value: string;
+  } | null;
+  jsdPublic?: boolean | null;
+}
+
+/**
+ * Comment retrieval options for API requests
+ */
+export interface GetCommentsOptions {
+  maxComments?: number;
+  startAt?: number;
+  orderBy?: 'created' | 'updated';
+  expand?: string[];
+}
+
+/**
+ * Comments response structure returned by JIRA comments endpoint
+ */
+export interface CommentsResult {
+  startAt: number;
+  maxResults: number;
+  total: number;
+  comments: Comment[];
 }
 
 /**

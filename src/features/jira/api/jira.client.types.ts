@@ -4,7 +4,7 @@
  * Defines the contract for JIRA clients
  */
 
-import type { Issue } from "./jira.models.types";
+import type { Issue, Comment, GetCommentsOptions } from "./jira.models.types";
 import type {
   IssueResponse,
   IssuesResponse,
@@ -22,6 +22,14 @@ export interface JiraApiClient {
    * @returns Promise resolving to the issue
    */
   getIssue(issueKey: string, fields?: string[]): Promise<Issue>;
+
+  /**
+   * Get comments for a specific issue
+   * @param issueKey - The issue key (e.g., "PROJECT-123")
+   * @param options - Optional comment retrieval options
+   * @returns Promise resolving to the comments array
+   */
+  getIssueComments(issueKey: string, options?: GetCommentsOptions): Promise<Comment[]>;
 
   /**
    * Get details of a specific issue with response wrapper

@@ -9,7 +9,7 @@ import type { JiraConfig } from "./jira.config.types";
 import { JiraApiError } from "./jira.errors";
 import { JiraHttpClient } from "./jira.http-client.impl";
 import type { HttpClient } from "./jira.http.types";
-import type { Issue, SearchResult } from "./jira.models.types";
+import type { Issue, SearchResult, Comment, CommentsResult, GetCommentsOptions } from "./jira.models.types";
 import type {
   IssueResponse,
   IssuesResponse,
@@ -67,6 +67,39 @@ export class JiraClient implements JiraApiClient {
       method: "GET",
       queryParams,
     });
+  }
+
+  /**
+   * Get comments for a specific issue
+   */
+  async getIssueComments(issueKey: string, options?: GetCommentsOptions): Promise<Comment[]> {
+    logger.debug(`Getting comments for issue: ${issueKey}`, { prefix: "JIRA:Client" });
+
+    const queryParams: Record<string, string | number | undefined> = {};
+    
+    if (options?.maxComments) {
+      queryParams.maxResults = options.maxComments;
+    }
+    
+    if (options?.startAt) {
+      queryParams.startAt = options.startAt;
+    }
+    
+    if (options?.orderBy) {
+      queryParams.orderBy = options.orderBy;
+    }
+    
+    if (options?.expand && options.expand.length > 0) {
+      queryParams.expand = options.expand.join(",");
+    }
+
+    const response = await this.httpClient.sendRequest<CommentsResult>({
+      endpoint: `issue/${issueKey}/comment`,
+      method: "GET",
+      queryParams,
+    });
+
+    return response.comments;
   }
 
   /**

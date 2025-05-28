@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { BaseToolHandler } from "@core/tools";
-import { validate } from "@core/utils/validation";
+import { formatZodError } from "@core/utils/validation";
 import type { JiraClient } from "../../api/jira.client.impl";
 import type { Issue } from "../../api/jira.models.types";
 import { issueKeySchema } from "../utils/schemas";
@@ -43,7 +43,16 @@ export class CreateTaskHandler extends BaseToolHandler<
     params: z.infer<typeof createTaskParamsSchema>,
   ): Promise<string> {
     try {
-      const { issueKey } = validate(createTaskParamsSchema, params);
+      // Validate parameters
+      const result = createTaskParamsSchema.safeParse(params);
+      if (!result.success) {
+        const errorMessage = `Invalid task parameters: ${formatZodError(
+          result.error,
+        )}`;
+        throw new Error(errorMessage);
+      }
+
+      const { issueKey } = result.data;
 
       this.logger.info(`Creating task from JIRA issue: ${issueKey}`);
 

@@ -29,7 +29,9 @@ export class IssueFormatter implements Formatter<Issue> {
     // Add description if available - now supports both ADF and string formats
     if (fields.description) {
       const descriptionText = parseADF(fields.description);
-      markdown += `## Description\n\n${descriptionText}\n\n`;
+      if (descriptionText.trim()) {
+        markdown += `## Description\n\n${descriptionText}\n\n`;
+      }
     }
 
     // Add labels if available
