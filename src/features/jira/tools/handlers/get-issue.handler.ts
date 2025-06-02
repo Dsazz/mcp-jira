@@ -1,14 +1,14 @@
 /**
  * Get Issue Handler
  *
- * Handles retrieving a specific JIRA issue by key
+ * MCP tool handler for retrieving JIRA issue details
  */
-import { z } from "zod";
-import { BaseToolHandler } from "@core/tools";
+import { BaseToolHandler } from "@core/tools/tool-handler.class";
 import { formatZodError } from "@core/utils/validation";
-import type { JiraClient } from "../../api/jira.client.impl";
-import { IssueFormatter } from "../../formatters/issue.formatter";
-import { issueKeySchema } from "../utils/schemas";
+import { issueKeySchema } from "@features/jira/api";
+import type { JiraClient } from "@features/jira/api/jira.client.impl";
+import { IssueFormatter } from "@features/jira/formatters/issue.formatter";
+import { z } from "zod";
 
 /**
  * Parameters for getting a JIRA issue

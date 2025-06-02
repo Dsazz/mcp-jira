@@ -1,12 +1,12 @@
+import type { SearchJiraIssuesParams } from "@features/jira/api";
 /**
  * Formatter for JIRA issues list to markdown
- * 
+ *
  * Formats search results as rich markdown cards with description previews
  */
-import type { Issue } from "../api/";
+import type { Issue } from "@features/jira/api/";
+import { parseADF } from "@features/jira/parsers/adf-parser";
 import type { Formatter } from "./formatter.interface";
-import { parseADF } from "../utils/adf-parser";
-import type { SearchJiraIssuesParams } from "../tools/utils/schemas";
 
 /**
  * Search result metadata for formatting context
@@ -34,7 +34,7 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
     }
 
     let markdown = this.formatHeader(metadata);
-    
+
     // Add individual issue cards
     for (const issue of issues) {
       markdown += this.formatIssueCard(issue);
@@ -55,7 +55,7 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
     }
 
     let header = "# JIRA Search Results\n\n";
-    
+
     // Show query information
     if (metadata.searchParams.jql) {
       header += `**JQL Query**: \`${metadata.searchParams.jql}\`\n`;
@@ -66,10 +66,10 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
         header += `**Filters**: ${helpers}\n`;
       }
     }
-    
+
     header += `**Results**: ${metadata.totalResults} ${metadata.totalResults === metadata.maxResults ? `(max ${metadata.maxResults})` : ""}\n\n`;
     header += "---\n\n";
-    
+
     return header;
   }
 
@@ -78,24 +78,26 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private formatHelperSummary(params: SearchJiraIssuesParams): string {
     const filters: string[] = [];
-    
+
     if (params.assignedToMe) {
       filters.push("Assigned to me");
     }
-    
+
     if (params.project) {
       filters.push(`Project: ${params.project}`);
     }
-    
+
     if (params.status) {
-      const statuses = Array.isArray(params.status) ? params.status : [params.status];
+      const statuses = Array.isArray(params.status)
+        ? params.status
+        : [params.status];
       filters.push(`Status: ${statuses.join(", ")}`);
     }
-    
+
     if (params.text) {
       filters.push(`Text: "${params.text}"`);
     }
-    
+
     return filters.join(" | ");
   }
 
@@ -104,35 +106,38 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private formatIssueCard(issue: Issue): string {
     const fields = issue.fields || {};
-    
+
     // Card header with issue key and summary
     let card = `## 🎫 ${issue.key}: ${fields.summary || "No Summary"}\n\n`;
-    
+
     // Status, priority, and assignee line
     const statusText = fields.status?.name || "Unknown";
     const statusIcon = this.getStatusIcon(statusText);
     const priorityText = fields.priority?.name || "None";
     const assigneeText = fields.assignee?.displayName || "Unassigned";
-    
+
     card += `**Status**: ${statusIcon} ${statusText} | **Priority**: ${priorityText} | **Assignee**: ${assigneeText}\n\n`;
-    
+
     // Description preview (if available)
     if (fields.description) {
       const descriptionText = parseADF(fields.description);
       const preview = this.truncateText(descriptionText, 100);
       card += `**Description**: ${preview}\n\n`;
     }
-    
+
     // Metadata line with dates
-    const dates = this.formatDates(fields.created, fields.updated);
+    const dates = this.formatDates(
+      fields.created || undefined,
+      fields.updated || undefined,
+    );
     if (dates) {
       card += `*${dates}*\n`;
     }
-    
+
     // Action link
     card += `**[View Details →](get_jira_issue ${issue.key})**\n\n`;
     card += "---\n\n";
-    
+
     return card;
   }
 
@@ -141,20 +146,33 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private getStatusIcon(status: string): string {
     const statusLower = status.toLowerCase();
-    
-    if (statusLower.includes("done") || statusLower.includes("resolved") || statusLower.includes("closed")) {
+
+    if (
+      statusLower.includes("done") ||
+      statusLower.includes("resolved") ||
+      statusLower.includes("closed")
+    ) {
       return "✅";
     }
-    if (statusLower.includes("progress") || statusLower.includes("review") || statusLower.includes("testing")) {
+    if (
+      statusLower.includes("progress") ||
+      statusLower.includes("review") ||
+      statusLower.includes("testing")
+    ) {
       return "🔄";
     }
     if (statusLower.includes("blocked") || statusLower.includes("impediment")) {
       return "🚫";
     }
-    if (statusLower.includes("todo") || statusLower.includes("to do") || statusLower.includes("open") || statusLower.includes("new")) {
+    if (
+      statusLower.includes("todo") ||
+      statusLower.includes("to do") ||
+      statusLower.includes("open") ||
+      statusLower.includes("new")
+    ) {
       return "📋";
     }
-    
+
     return "🔵"; // Default
   }
 
@@ -163,14 +181,14 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private truncateText(text: string, maxLength: number): string {
     if (!text) return "";
-    
+
     // Remove multiple whitespace and newlines for preview
     const cleanText = text.replace(/\s+/g, " ").trim();
-    
+
     if (cleanText.length <= maxLength) {
       return cleanText;
     }
-    
+
     return `${cleanText.substring(0, maxLength)}...`;
   }
 
@@ -179,17 +197,17 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private formatDates(created?: string, updated?: string): string {
     const parts: string[] = [];
-    
+
     if (created) {
       const createdDate = new Date(created);
       parts.push(`Created: ${createdDate.toLocaleDateString()}`);
     }
-    
+
     if (updated) {
       const updatedDate = new Date(updated);
       parts.push(`Updated: ${updatedDate.toLocaleDateString()}`);
     }
-    
+
     return parts.join(" | ");
   }
 
@@ -198,15 +216,16 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private formatFooter(metadata?: SearchResultMetadata): string {
     if (!metadata) return "";
-    
+
     let footer = "";
-    
+
     if (metadata.totalResults === metadata.maxResults) {
       footer += `*Showing first ${metadata.maxResults} results. Use \`maxResults\` parameter to see more.*\n\n`;
     }
-    
-    footer += "💡 **Tip**: Use `get_jira_issue <ISSUE-KEY>` for detailed information about any issue.\n";
-    
+
+    footer +=
+      "💡 **Tip**: Use `get_jira_issue <ISSUE-KEY>` for detailed information about any issue.\n";
+
     return footer;
   }
 
@@ -215,7 +234,7 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
    */
   private formatEmptyResults(metadata?: SearchResultMetadata): string {
     let message = "# JIRA Search Results\n\n";
-    
+
     if (metadata) {
       if (metadata.searchParams.jql) {
         message += `**JQL Query**: \`${metadata.searchParams.jql}\`\n\n`;
@@ -223,10 +242,10 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
         message += "**Query**: Helper parameters\n\n";
       }
     }
-    
+
     message += "📭 **No issues found matching your search criteria.**\n\n";
     message += "Try adjusting your search parameters or JQL query.\n";
-    
+
     return message;
   }
-} 
+}

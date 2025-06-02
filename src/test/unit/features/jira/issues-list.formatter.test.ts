@@ -1,12 +1,12 @@
 /**
  * Issues List Formatter Tests
- * 
+ *
  * Tests for JIRA issues list markdown formatting
  */
-import { describe, it, expect } from "bun:test";
-import { IssuesListFormatter } from "./issues-list.formatter";
-import type { Issue } from "../api/";
-import type { SearchResultMetadata } from "./issues-list.formatter";
+import { describe, expect, it } from "bun:test";
+import type { Issue } from "@features/jira/api/jira.models.types";
+import { IssuesListFormatter } from "@features/jira/formatters/issues-list.formatter";
+import type { SearchResultMetadata } from "@features/jira/formatters/issues-list.formatter";
 
 describe("IssuesListFormatter", () => {
   const formatter = new IssuesListFormatter();
@@ -23,36 +23,39 @@ describe("IssuesListFormatter", () => {
           {
             type: "paragraph",
             content: [
-              { type: "text", text: "This is a sample description with some details about the issue." }
-            ]
-          }
-        ]
+              {
+                type: "text",
+                text: "This is a sample description with some details about the issue.",
+              },
+            ],
+          },
+        ],
       },
       status: {
         name: "In Progress",
         statusCategory: {
           name: "In Progress",
-          colorName: "yellow"
-        }
+          colorName: "yellow",
+        },
       },
       priority: {
         name: "High",
-        iconUrl: "https://example.com/icon.png"
+        iconUrl: "https://example.com/icon.png",
       },
       assignee: {
         displayName: "John Doe",
         emailAddress: "john.doe@example.com",
-        accountId: "abc123"
+        accountId: "abc123",
       },
       reporter: {
         displayName: "Jane Smith",
-        emailAddress: "jane.smith@example.com", 
-        accountId: "def456"
+        emailAddress: "jane.smith@example.com",
+        accountId: "def456",
       },
       created: "2024-01-15T10:30:00.000Z",
       updated: "2024-01-16T14:45:00.000Z",
-      labels: ["bug", "urgent"]
-    }
+      labels: ["bug", "urgent"],
+    },
   };
 
   const mockMetadata: SearchResultMetadata = {
@@ -61,21 +64,23 @@ describe("IssuesListFormatter", () => {
     maxResults: 25,
     searchParams: {
       text: "bug",
-      maxResults: 25
-    }
+      maxResults: 25,
+    },
   };
 
   describe("format", () => {
     it("should format single issue correctly", () => {
       const result = formatter.format([mockIssue], mockMetadata);
-      
+
       expect(result).toContain("# JIRA Search Results");
       expect(result).toContain("**Results**: 1");
       expect(result).toContain("## 🎫 PROJ-123: Sample issue summary");
       expect(result).toContain("**Status**: 🔄 In Progress");
       expect(result).toContain("**Priority**: High");
       expect(result).toContain("**Assignee**: John Doe");
-      expect(result).toContain("**Description**: This is a sample description with some details about the issue.");
+      expect(result).toContain(
+        "**Description**: This is a sample description with some details about the issue.",
+      );
       expect(result).toContain("**[View Details →](get_jira_issue PROJ-123)**");
     });
 
@@ -86,17 +91,17 @@ describe("IssuesListFormatter", () => {
         key: "PROJ-124",
         fields: {
           ...mockIssue.fields,
-          summary: "Another issue"
-        }
+          summary: "Another issue",
+        },
       };
 
       const metadata: SearchResultMetadata = {
         ...mockMetadata,
-        totalResults: 2
+        totalResults: 2,
       };
 
       const result = formatter.format([mockIssue, secondIssue], metadata);
-      
+
       expect(result).toContain("**Results**: 2");
       expect(result).toContain("PROJ-123: Sample issue summary");
       expect(result).toContain("PROJ-124: Another issue");
@@ -104,9 +109,11 @@ describe("IssuesListFormatter", () => {
 
     it("should handle empty results", () => {
       const result = formatter.format([], mockMetadata);
-      
+
       expect(result).toContain("# JIRA Search Results");
-      expect(result).toContain("📭 **No issues found matching your search criteria.**");
+      expect(result).toContain(
+        "📭 **No issues found matching your search criteria.**",
+      );
       expect(result).toContain("Try adjusting your search parameters");
     });
 
@@ -116,12 +123,12 @@ describe("IssuesListFormatter", () => {
         key: "PROJ-123",
         self: "https://example.atlassian.net/rest/api/2/issue/12345",
         fields: {
-          summary: "Minimal issue"
-        }
+          summary: "Minimal issue",
+        },
       };
 
       const result = formatter.format([minimalIssue], mockMetadata);
-      
+
       expect(result).toContain("PROJ-123: Minimal issue");
       expect(result).toContain("**Status**: 🔵 Unknown");
       expect(result).toContain("**Priority**: None");
@@ -136,8 +143,8 @@ describe("IssuesListFormatter", () => {
         ...mockIssue,
         fields: {
           ...mockIssue.fields,
-          status: { name: "Done" }
-        }
+          status: { name: "Done" },
+        },
       };
 
       const result = formatter.format([doneIssue], mockMetadata);
@@ -149,8 +156,8 @@ describe("IssuesListFormatter", () => {
         ...mockIssue,
         fields: {
           ...mockIssue.fields,
-          status: { name: "Blocked" }
-        }
+          status: { name: "Blocked" },
+        },
       };
 
       const result = formatter.format([blockedIssue], mockMetadata);
@@ -162,8 +169,8 @@ describe("IssuesListFormatter", () => {
         ...mockIssue,
         fields: {
           ...mockIssue.fields,
-          status: { name: "To Do" }
-        }
+          status: { name: "To Do" },
+        },
       };
 
       const result = formatter.format([todoIssue], mockMetadata);
@@ -178,8 +185,8 @@ describe("IssuesListFormatter", () => {
         ...mockIssue,
         fields: {
           ...mockIssue.fields,
-          description: longDescription
-        }
+          description: longDescription,
+        },
       };
 
       const result = formatter.format([longDescIssue], mockMetadata);
@@ -193,8 +200,8 @@ describe("IssuesListFormatter", () => {
         ...mockIssue,
         fields: {
           ...mockIssue.fields,
-          description: shortDescription
-        }
+          description: shortDescription,
+        },
       };
 
       const result = formatter.format([shortDescIssue], mockMetadata);
@@ -211,12 +218,14 @@ describe("IssuesListFormatter", () => {
         maxResults: 25,
         searchParams: {
           jql: "project = PROJ AND status = Open",
-          maxResults: 25
-        }
+          maxResults: 25,
+        },
       };
 
       const result = formatter.format([mockIssue], jqlMetadata);
-      expect(result).toContain("**JQL Query**: `project = PROJ AND status = Open`");
+      expect(result).toContain(
+        "**JQL Query**: `project = PROJ AND status = Open`",
+      );
     });
 
     it("should format helper parameters metadata", () => {
@@ -229,13 +238,15 @@ describe("IssuesListFormatter", () => {
           project: "PROJ",
           status: "Open",
           text: "bug",
-          maxResults: 25
-        }
+          maxResults: 25,
+        },
       };
 
       const result = formatter.format([mockIssue], helperMetadata);
       expect(result).toContain("**Query**: Helper parameters");
-      expect(result).toContain("**Filters**: Assigned to me | Project: PROJ | Status: Open | Text: \"bug\"");
+      expect(result).toContain(
+        '**Filters**: Assigned to me | Project: PROJ | Status: Open | Text: "bug"',
+      );
     });
 
     it("should show max results warning", () => {
@@ -245,13 +256,15 @@ describe("IssuesListFormatter", () => {
         maxResults: 25,
         searchParams: {
           text: "test",
-          maxResults: 25
-        }
+          maxResults: 25,
+        },
       };
 
       const issues = Array(25).fill(mockIssue);
       const result = formatter.format(issues, maxMetadata);
-      expect(result).toContain("*Showing first 25 results. Use `maxResults` parameter to see more.*");
+      expect(result).toContain(
+        "*Showing first 25 results. Use `maxResults` parameter to see more.*",
+      );
     });
 
     it("should not show max results warning when under limit", () => {
@@ -261,8 +274,8 @@ describe("IssuesListFormatter", () => {
         maxResults: 25,
         searchParams: {
           text: "test",
-          maxResults: 25
-        }
+          maxResults: 25,
+        },
       };
 
       const issues = Array(10).fill(mockIssue);
@@ -286,8 +299,8 @@ describe("IssuesListFormatter", () => {
         fields: {
           ...mockIssue.fields,
           created: undefined,
-          updated: undefined
-        }
+          updated: undefined,
+        },
       };
 
       const result = formatter.format([noDateIssue], mockMetadata);
@@ -299,7 +312,9 @@ describe("IssuesListFormatter", () => {
   describe("footer", () => {
     it("should include navigation tip", () => {
       const result = formatter.format([mockIssue], mockMetadata);
-      expect(result).toContain("💡 **Tip**: Use `get_jira_issue <ISSUE-KEY>` for detailed information");
+      expect(result).toContain(
+        "💡 **Tip**: Use `get_jira_issue <ISSUE-KEY>` for detailed information",
+      );
     });
   });
-}); 
+});

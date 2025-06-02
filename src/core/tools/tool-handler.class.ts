@@ -1,11 +1,11 @@
+import { getLogger } from "@core/logging";
+import type { Logger } from "@core/logging/log.types";
 /**
  * ToolHandler - Base implementation for MCP tool handlers
  *
  * This provides a standardized foundation for implementing MCP tool handlers
  * with consistent error handling, logging, and response formatting.
  */
-import { getLogger } from "../logging";
-import type { Logger } from "../logging/log.types";
 import {
   type McpResponse,
   createErrorResponse,

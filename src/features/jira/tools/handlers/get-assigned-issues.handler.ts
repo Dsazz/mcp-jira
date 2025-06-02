@@ -1,11 +1,11 @@
 /**
  * Get Assigned Issues Handler
  *
- * Handles retrieving all JIRA issues assigned to the current user
+ * MCP tool handler for retrieving issues assigned to the current user
  */
-import { BaseToolHandler } from "@core/tools";
-import type { JiraClient } from "../../api/jira.client.impl";
-import { IssueListFormatter } from "../../formatters/issue-list.formatter";
+import { BaseToolHandler } from "@core/tools/tool-handler.class";
+import type { JiraClient } from "@features/jira/api/jira.client.impl";
+import { IssueListFormatter } from "@features/jira/formatters/issue-list.formatter";
 
 /**
  * Handler for retrieving and formatting assigned JIRA issues

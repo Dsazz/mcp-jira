@@ -1,12 +1,107 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to the JIRA MCP Server will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
 
-## [0.3.1] - 2025-05-28
+### Planned
+
+- Additional JIRA tools (projects, sprints, boards)
+- Enhanced error handling and logging
+- Performance optimizations
+
+## [0.4.0] - 2025-06-02
+
+### 🚀 Major Features
+
+- **🆕 Complete JIRA Issue Management Suite**: Full CRUD operations for JIRA issues
+
+  - `jira_create_issue`: Create new issues with comprehensive field support
+  - `jira_update_issue`: Update existing issues with field changes, status transitions, and worklog entries
+  - Advanced field support including custom fields, time tracking, and array operations
+
+- **📊 Project & Board Management**: Comprehensive JIRA workspace navigation
+  - `jira_get_projects`: Browse and discover JIRA projects with filtering options
+  - `jira_get_boards`: Access Scrum and Kanban boards with advanced filtering
+  - `jira_get_sprints`: Sprint management for agile project workflows
+
+### ✨ Enhanced Capabilities
+
+- **🎯 Advanced Issue Creation**:
+
+  - Support for all standard JIRA fields (priority, assignee, labels, components, versions)
+  - Time tracking integration (estimates, due dates)
+  - Custom field support for organization-specific workflows
+  - ADF format support for rich descriptions
+
+- **⚡ Powerful Issue Updates**:
+
+  - Field-level updates with validation
+  - Array operations (add/remove/set) for labels, components, and versions
+  - Status transitions with workflow validation
+  - Worklog entries with time tracking
+  - Comprehensive error handling and validation
+
+- **🔍 Enhanced Discovery Tools**:
+  - Project browsing with metadata (description, lead, issue types)
+  - Board filtering by type (Scrum/Kanban), project, and name
+  - Sprint management with state filtering (active, closed, future)
+  - Pagination support across all discovery tools
+
+### 🏗️ Technical Improvements
+
+- **📋 Comprehensive Test Suite**: 540+ tests covering all new functionality
+
+  - Unit tests for all new handlers and formatters
+  - Integration tests for end-to-end workflows
+  - Mock factories for reliable testing
+  - 100% test pass rate maintained
+
+- **🎨 Rich Formatting System**:
+
+  - Specialized formatters for each tool type
+  - Consistent markdown output with action links
+  - Error formatting with helpful suggestions
+  - Progress indicators and status displays
+
+- **🔧 Enhanced Error Handling**:
+
+  - Detailed error messages with solution suggestions
+  - Validation error formatting with field-specific guidance
+  - Network error resilience with retry suggestions
+  - Permission error handling with clear explanations
+
+- **📚 Code Quality & Architecture**:
+  - Biome integration for consistent code formatting
+  - Import organization and standardization
+  - TypeScript strict mode compliance
+  - Modular architecture with clear separation of concerns
+
+### 🛠️ Developer Experience
+
+- **📖 Comprehensive Documentation**: Updated README with all new tools and examples
+- **🧪 Testing Infrastructure**: Enhanced test utilities and mock systems
+- **⚙️ Build System**: Optimized build process with proper TypeScript compilation
+- **🔍 Code Quality**: Automated formatting and linting with Biome
+
+### 🐛 Bug Fixes
+
+- **Import Organization**: Fixed import ordering and standardization across codebase
+- **Type Safety**: Resolved TypeScript compilation issues
+- **Code Formatting**: Applied consistent formatting standards
+- **Test Reliability**: Enhanced test stability and mock accuracy
+
+### 📈 Performance & Reliability
+
+- **Optimized API Calls**: Efficient JIRA API usage with proper pagination
+- **Memory Management**: Improved resource handling in long-running operations
+- **Error Recovery**: Better error handling and recovery mechanisms
+- **Validation Performance**: Fast parameter validation with detailed feedback
+
+## [0.3.1] - 2025-06-01
 
 ### Added
 

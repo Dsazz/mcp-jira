@@ -4,7 +4,7 @@
  * Contains core data structures representing JIRA domain objects
  */
 
-import type { ADFNode, ADFDocument } from "../utils/adf-parser";
+import type { ADFDocument, ADFNode } from "@features/jira/parsers/adf-parser";
 
 /**
  * Basic JIRA issue representation
@@ -22,6 +22,10 @@ export interface Issue {
 export interface IssueFields {
   summary?: string | null;
   description?: ADFDocument | ADFNode | string | null;
+  issuetype?: {
+    name: string | null;
+    iconUrl?: string | null;
+  } | null;
   status?: {
     name: string | null;
     statusCategory?: {
@@ -77,7 +81,7 @@ export interface Comment {
 export interface GetCommentsOptions {
   maxComments?: number;
   startAt?: number;
-  orderBy?: 'created' | 'updated';
+  orderBy?: "created" | "updated";
   expand?: string[];
 }
 

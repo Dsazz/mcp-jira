@@ -3,7 +3,7 @@
  * Configuration and setup helpers for test environment
  */
 
-import { beforeEach, afterEach } from 'bun:test';
+import { afterEach, beforeEach } from "bun:test";
 
 /**
  * Mock console to avoid test output noise
@@ -15,7 +15,7 @@ export function mockConsole() {
     warn: () => {},
     error: () => {},
     info: () => {},
-    debug: () => {}
+    debug: () => {},
   };
 
   beforeEach(() => {
@@ -32,9 +32,9 @@ export function mockConsole() {
  */
 export function setupTestEnv() {
   beforeEach(() => {
-    process.env.JIRA_BASE_URL = 'https://test.atlassian.net';
-    process.env.JIRA_EMAIL = 'test@example.com';
-    process.env.JIRA_API_TOKEN = 'test-token';
+    process.env.JIRA_BASE_URL = "https://test.atlassian.net";
+    process.env.JIRA_EMAIL = "test@example.com";
+    process.env.JIRA_API_TOKEN = "test-token";
   });
 
   afterEach(() => {
@@ -61,4 +61,4 @@ export function setupTests() {
   setupTestEnv();
   setupCleanState();
   // Note: mockConsole() can be enabled per-test if needed
-} 
+}

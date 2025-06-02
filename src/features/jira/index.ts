@@ -1,8 +1,8 @@
+import { logger } from "@core/logging";
 /**
  * JIRA integration for MCP
  */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { logger } from "@core/logging";
 import { registerTools } from "./register-tools";
 
 /**

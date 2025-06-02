@@ -1,4 +1,4 @@
-import type { Issue } from "../api/";
+import type { Issue } from "@features/jira/api/";
 /**
  * Formatter for lists of JIRA issues to markdown
  */
