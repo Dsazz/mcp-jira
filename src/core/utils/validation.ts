@@ -1,10 +1,10 @@
+import { ValidationError } from "@core/errors";
 /**
  * Validation Utilities
  *
- * Utilities for validating data using Zod schemas
+ * Common validation functions and utilities
  */
 import { z } from "zod";
-import { ValidationError } from "../errors";
 
 /**
  * Format a Zod error into a string

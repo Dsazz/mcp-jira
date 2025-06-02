@@ -1,10 +1,10 @@
+import { logger } from "@core/logging";
 /**
  * Features Module
  *
  * Feature modules for the MCP server
  */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { logger } from "@core/logging";
 import { initializeJiraFeature } from "./jira";
 
 /**

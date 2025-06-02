@@ -1,15 +1,15 @@
 <div align="center">
 
-# 🔗 JIRA MCP Server
+# 🎯 JIRA MCP Server
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
-[![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=Jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![JIRA](https://img.shields.io/badge/JIRA-0052CC?style=for-the-badge&logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-blue?style=for-the-badge)](https://modelcontextprotocol.io)
 
 <p align="center">
-  <b>A powerful Model Context Protocol (MCP) server that brings JIRA integration directly to any editor or application that supports MCP</b>
+  <b>A powerful Model Context Protocol (MCP) server that brings Atlassian JIRA integration directly to any editor or application that supports MCP</b>
 </p>
 
 </div>
@@ -18,26 +18,48 @@
 
 ## ✨ Features
 
-- 📋 **Access JIRA Directly From Cursor**
+- 🎯 **Access JIRA Directly From Cursor**
 
-  - View your assigned issues without leaving your IDE
-  - Get detailed information on specific issues with one command
-  - Convert JIRA issues into local tasks seamlessly
+  - Browse your assigned issues without leaving your IDE
+  - Get detailed issue information with formatted content
+  - Create local tasks from JIRA issues seamlessly
 
-- 🔍 **Powerful Issue Search**
+- 🔍 **Powerful Search Capabilities**
 
-  - Search issues using JQL queries or beginner-friendly parameters
-  - Support for text search, project filtering, status filtering, and assignee filtering
-  - Rich markdown formatting with issue previews and actionable links
+  - Search issues using JQL (JIRA Query Language) or beginner-friendly parameters
+  - Support for project filtering, status filtering, and advanced queries
+  - Rich markdown formatting with issue previews and direct links
 
-- 📝 **Rich Description Parsing**
-  - Automatic conversion of JIRA's Atlassian Document Format (ADF) to readable markdown
-  - Support for formatted text, lists, code blocks, headers, and links
-  - Backward compatibility with plain text descriptions
+- 📝 **Smart Issue Management**
+  - Retrieve detailed issue information with ADF parsing
+  - Access issue comments with advanced filtering options
+  - Convert JIRA issues into actionable local tasks
 
 ## 🚀 Quick Start
 
 ### Installation
+
+Add this configuration to your MCP client:
+
+```json
+{
+  "mcpServers": {
+    "JIRA Tools": {
+      "command": "bunx",
+      "args": ["-y", "@dsazz/mcp-jira@latest"],
+      "env": {
+        "JIRA_HOST": "https://your-domain.atlassian.net",
+        "JIRA_USERNAME": "your-email@example.com",
+        "JIRA_API_TOKEN": "your-jira-api-token"
+      }
+    }
+  }
+}
+```
+
+### Development Setup
+
+For local development and testing:
 
 ```bash
 # Clone the repository
@@ -50,6 +72,12 @@ bun install
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your JIRA credentials
+
+# Build the project
+bun run build
+
+# Test with MCP Inspector
+bun run inspect
 ```
 
 ### Configuration
@@ -70,28 +98,254 @@ JIRA_API_TOKEN=your-jira-api-token-here
 > - Do not add quotes around the token value
 > - Paste the token exactly as provided by Atlassian
 
+## 🧰 Available Tools
+
+### Core JIRA Tools
+
+| Tool                       | Description                                                       | Parameters                           | Returns                            |
+| -------------------------- | ----------------------------------------------------------------- | ------------------------------------ | ---------------------------------- |
+| `jira_get_assigned_issues` | Retrieves all issues assigned to you                              | None                                 | Markdown-formatted list of issues  |
+| `jira_get_issue`           | Gets detailed information about a specific issue                  | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details   |
+| `jira_get_issue_comments`  | Retrieves comments for a specific issue with configurable options | See comment parameters below         | Markdown-formatted comments        |
+| `jira_create_issue`        | Create new JIRA issues with comprehensive field support           | See issue creation parameters        | Markdown-formatted creation result |
+| `jira_update_issue`        | Update existing issues with field changes and status transitions  | See issue update parameters          | Markdown-formatted update result   |
+| `jira_get_projects`        | Retrieve and browse JIRA projects with filtering options          | See project parameters               | Markdown-formatted project list    |
+| `jira_get_boards`          | Get JIRA boards (Scrum/Kanban) with advanced filtering            | See board parameters                 | Markdown-formatted board list      |
+| `jira_get_sprints`         | Retrieve sprint information for agile project management          | See sprint parameters                | Markdown-formatted sprint list     |
+| `search_jira_issues`       | Search JIRA issues with JQL or helper parameters                  | See search parameters below          | Markdown-formatted search results  |
+
+#### Issue Creation Parameters
+
+The `jira_create_issue` tool supports comprehensive issue creation:
+
+**Required**:
+
+- `projectKey`: String - Project key (e.g., `"PROJ"`)
+- `issueType`: String - Issue type (e.g., `"Task"`, `"Bug"`, `"Story"`)
+- `summary`: String - Issue title/summary
+
+**Optional Fields**:
+
+- `description`: String - Detailed description (supports ADF format)
+- `priority`: String - Priority level (`"Highest"`, `"High"`, `"Medium"`, `"Low"`, `"Lowest"`)
+- `assignee`: String - Assignee username or email
+- `reporter`: String - Reporter username or email
+- `labels`: Array - Labels to apply to the issue
+- `components`: Array - Component names
+- `fixVersions`: Array - Fix version names
+- `affectsVersions`: Array - Affected version names
+- `timeEstimate`: String - Time estimate in JIRA format (e.g., `"2h"`, `"1d 4h"`)
+- `dueDate`: String - Due date in ISO format
+- `environment`: String - Environment description
+- `customFields`: Object - Custom field values
+
+**Examples**:
+
+```
+# Basic issue creation
+jira_create_issue projectKey:"PROJ" issueType:"Task" summary:"Fix login bug"
+
+# Comprehensive issue with all fields
+jira_create_issue projectKey:"PROJ" issueType:"Bug" summary:"Critical login issue" description:"Users cannot log in" priority:"High" assignee:"john.doe" labels:["urgent","security"] timeEstimate:"4h"
+```
+
+#### Issue Update Parameters
+
+The `jira_update_issue` tool supports comprehensive issue updates:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+
+**Field Updates** (any combination):
+
+- `summary`: String - Update issue title
+- `description`: String - Update description
+- `priority`: String - Change priority
+- `assignee`: String - Reassign issue
+- `reporter`: String - Change reporter
+- `timeEstimate`: String - Update time estimate
+- `timeSpent`: String - Log time spent
+- `dueDate`: String - Update due date
+- `environment`: String - Update environment
+
+**Array Operations** (add/remove/set):
+
+- `labels`: Object - Modify labels (`{operation: "add|remove|set", values: ["label1", "label2"]}`)
+- `components`: Object - Modify components
+- `fixVersions`: Object - Modify fix versions
+- `affectsVersions`: Object - Modify affected versions
+
+**Status Transitions**:
+
+- `status`: String - Transition to new status (e.g., `"In Progress"`, `"Done"`)
+
+**Worklog**:
+
+- `worklog`: Object - Add work log entry (`{timeSpent: "2h", comment: "Fixed issue"}`)
+
+**Examples**:
+
+```
+# Update basic fields
+jira_update_issue issueKey:"PROJ-123" summary:"Updated title" priority:"High"
+
+# Add labels and transition status
+jira_update_issue issueKey:"PROJ-123" labels:'{operation:"add",values:["urgent"]}' status:"In Progress"
+
+# Log work and add comment
+jira_update_issue issueKey:"PROJ-123" worklog:'{timeSpent:"2h",comment:"Completed testing"}'
+```
+
+#### Project Parameters
+
+The `jira_get_projects` tool supports project discovery:
+
+**Optional Parameters**:
+
+- `maxResults`: Number (1-100, default: 50) - Limit number of results
+- `startAt`: Number (default: 0) - Pagination offset
+- `expand`: Array - Additional fields to include (`["description", "lead", "issueTypes", "url", "projectKeys"]`)
+
+**Examples**:
+
+```
+# Get all projects
+jira_get_projects
+
+# Get projects with additional details
+jira_get_projects expand:["description","lead","issueTypes"] maxResults:20
+```
+
+#### Board Parameters
+
+The `jira_get_boards` tool supports board management:
+
+**Optional Parameters**:
+
+- `maxResults`: Number (1-100, default: 50) - Limit number of results
+- `startAt`: Number (default: 0) - Pagination offset
+- `type`: String - Board type (`"scrum"`, `"kanban"`)
+- `name`: String - Filter by board name
+- `projectKeyOrId`: String - Filter by project
+
+**Examples**:
+
+```
+# Get all boards
+jira_get_boards
+
+# Get Scrum boards for specific project
+jira_get_boards type:"scrum" projectKeyOrId:"PROJ"
+
+# Search boards by name
+jira_get_boards name:"Sprint Board" maxResults:10
+```
+
+#### Sprint Parameters
+
+The `jira_get_sprints` tool supports sprint management:
+
+**Required**:
+
+- `boardId`: Number - Board ID to get sprints from
+
+**Optional Parameters**:
+
+- `maxResults`: Number (1-100, default: 50) - Limit number of results
+- `startAt`: Number (default: 0) - Pagination offset
+- `state`: String - Sprint state (`"active"`, `"closed"`, `"future"`)
+
+**Examples**:
+
+```
+# Get all sprints for a board
+jira_get_sprints boardId:123
+
+# Get only active sprints
+jira_get_sprints boardId:123 state:"active"
+
+# Get sprints with pagination
+jira_get_sprints boardId:123 maxResults:10 startAt:20
+```
+
+#### Comment Parameters
+
+The `jira_get_issue_comments` tool supports progressive disclosure with these parameters:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+
+**Basic Options**:
+
+- `maxComments`: Number (1-100, default: 10) - Maximum number of comments to retrieve
+- `orderBy`: String (`"created"` or `"updated"`, default: `"created"`) - Sort order for comments
+
+**Advanced Options**:
+
+- `includeInternal`: Boolean (default: false) - Include internal/restricted comments
+- `authorFilter`: String - Filter comments by author name or email
+- `dateRange`: Object - Filter by date range:
+  - `from`: String (ISO date) - Start date
+  - `to`: String (ISO date) - End date
+
+**Examples**:
+
+```
+# Basic usage - get 10 most recent comments
+jira_get_issue_comments PROJ-123
+
+# Get more comments with specific ordering
+jira_get_issue_comments PROJ-123 maxComments:25 orderBy:"updated"
+
+# Advanced filtering
+jira_get_issue_comments PROJ-123 authorFilter:"john.doe" includeInternal:true
+```
+
+#### Search Parameters
+
+The `search_jira_issues` tool supports two modes:
+
+**Expert Mode (JQL)**:
+
+- `jql`: Direct JQL query string (e.g., `"project = PROJ AND status = Open"`)
+
+**Beginner Mode (Helper Parameters)**:
+
+- `assignedToMe`: Boolean - Show only issues assigned to current user
+- `project`: String - Filter by project key
+- `status`: String or Array - Filter by status(es) (e.g., `"Open"` or `["Open", "In Progress"]`)
+- `text`: String - Search in summary and description fields
+
+**Common Options**:
+
+- `maxResults`: Number (1-50, default: 25) - Limit number of results
+- `fields`: Array - Specify which fields to retrieve (optional)
+
 ## 🛠️ Development Tools
 
 ### Code Quality Tools
 
-The project uses [Biome](https://biomejs.dev/) for code formatting and linting, replacing the previous ESLint setup. Biome provides:
+The project uses [Biome](https://biomejs.dev/) for code formatting and linting, providing:
 
 - Fast, unified formatting and linting
 - TypeScript-first tooling
 - Zero configuration needed
 - Consistent code style enforcement
 
-To format and lint your code:
-
 ```bash
 # Format code
-bun format
+bun run format
 
 # Check code for issues
-bun check
+bun run check
 
 # Type check
-bun typecheck
+bun run typecheck
+
+# Run tests
+bun test
 ```
 
 ### MCP Inspector
@@ -160,7 +414,7 @@ Test your MCP server directly with Claude:
    {
      "mcpServers": {
        "JIRA Tools": {
-         "command": "node", //or "bun"
+         "command": "node",
          "args": ["/absolute/path/to/your/project/dist/index.js"],
          "env": {
            "JIRA_USERNAME": "your-jira-username",
@@ -189,7 +443,7 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 {
   "mcpServers": {
     "JIRA Tools": {
-      "command": "node", // or "bun"
+      "command": "node",
       "args": ["/absolute/path/to/your/project/dist/index.js"],
       "env": {
         "JIRA_USERNAME": "your-jira-username",
@@ -201,83 +455,26 @@ Add this MCP server to your Cursor IDE's MCP configuration:
 }
 ```
 
-## 🧰 Available Tools
-
-### JIRA Tools
-
-| Tool                       | Description                                                       | Parameters                           | Returns                           |
-| -------------------------- | ----------------------------------------------------------------- | ------------------------------------ | --------------------------------- |
-| `jira_get_assigned_issues` | Retrieves all issues assigned to you                              | None                                 | Markdown-formatted list of issues |
-| `jira_get_issue`           | Gets detailed information about a specific issue                  | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted issue details  |
-| `jira_get_issue_comments`  | Retrieves comments for a specific issue with configurable options | See comment parameters below         | Markdown-formatted comments       |
-| `jira_create_task`         | Creates a local task from a JIRA issue                            | `issueKey`: Issue key (e.g., PD-312) | Markdown-formatted task           |
-| `search_jira_issues`       | Search JIRA issues with JQL or helper parameters                  | See search parameters below          | Markdown-formatted search results |
-
-#### Comment Parameters
-
-The `jira_get_issue_comments` tool supports progressive disclosure with these parameters:
-
-**Required**:
-
-- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
-
-**Basic Options**:
-
-- `maxComments`: Number (1-100, default: 10) - Maximum number of comments to retrieve
-- `orderBy`: String (`"created"` or `"updated"`, default: `"created"`) - Sort order for comments
-
-**Advanced Options**:
-
-- `includeInternal`: Boolean (default: false) - Include internal/restricted comments
-- `authorFilter`: String - Filter comments by author name or email
-- `dateRange`: Object - Filter by date range:
-  - `from`: String (ISO date) - Start date
-  - `to`: String (ISO date) - End date
-
-**Examples**:
-
-```
-# Basic usage - get 10 most recent comments
-jira_get_issue_comments PROJ-123
-
-# Get more comments with specific ordering
-jira_get_issue_comments PROJ-123 maxComments:25 orderBy:"updated"
-
-# Advanced filtering
-jira_get_issue_comments PROJ-123 authorFilter:"john.doe" includeInternal:true
-```
-
-#### Search Parameters
-
-The `search_jira_issues` tool supports two modes:
-
-**Expert Mode (JQL)**:
-
-- `jql`: Direct JQL query string (e.g., `"project = PROJ AND status = Open"`)
-
-**Beginner Mode (Helper Parameters)**:
-
-- `assignedToMe`: Boolean - Show only issues assigned to current user
-- `project`: String - Filter by project key
-- `status`: String or Array - Filter by status(es) (e.g., `"Open"` or `["Open", "In Progress"]`)
-- `text`: String - Search in summary and description fields
-
-**Common Options**:
-
-- `maxResults`: Number (1-50, default: 25) - Limit number of results
-- `fields`: Array - Specify which fields to retrieve (optional)
-
 ## 📁 Project Structure
 
 ```
- src/
-  ├── core/          # Core functionality and configurations
-  ├── features/      # Feature implementations
-  │   └── jira/      # JIRA API integration
-  │       ├── api/         # JIRA API client
-  │       ├── formatters/  # Response formatters
-  │       └── tools/       # MCP tool implementations
-  └── test/          # Test utilities
+src/
+├── core/                    # Core functionality and configurations
+│   ├── errors/             # Error handling utilities
+│   ├── logging/            # Logging infrastructure
+│   ├── responses/          # Response formatting
+│   ├── server/             # MCP server implementation
+│   ├── tools/              # Base tool interfaces
+│   └── utils/              # Core utilities
+├── features/               # Feature implementations
+│   └── jira/              # JIRA API integration
+│       ├── api/           # JIRA API client
+│       ├── formatters/    # Response formatters
+│       ├── tools/         # MCP tool implementations
+│       └── utils/         # JIRA-specific utilities
+└── test/                  # Test utilities and mocks
+    ├── mocks/             # Mock factories
+    └── utils/             # Test helpers
 ```
 
 ### NPM Scripts
@@ -311,6 +508,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [MCP Specification](https://spec.modelcontextprotocol.io/specification/)
 - [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
+- [JIRA REST API Documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v2/)
 
 ## 📄 License
 

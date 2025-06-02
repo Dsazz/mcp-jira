@@ -1,14 +1,14 @@
 #!/usr/bin/env node
+import { normalizeError } from "@core/errors";
+import { logger } from "@core/logging";
+import { startServer } from "@core/server";
+import { registerFeatures } from "@features/index";
 /**
  * MCP Server Entry Point
  *
  * Main entry point for the MCP server application
  */
 import { config } from "dotenv";
-import { normalizeError } from "@core/errors";
-import { logger } from "@core/logging";
-import { startServer } from "@core/server";
-import { registerFeatures } from "@features/index";
 
 /**
  * Bootstrap the application

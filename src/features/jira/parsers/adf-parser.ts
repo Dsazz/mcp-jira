@@ -1,6 +1,6 @@
 /**
  * ADF (Atlassian Document Format) Parser
- * 
+ *
  * Converts JIRA's complex ADF object structures to readable markdown text.
  * Handles backward compatibility with string descriptions.
  */
@@ -20,7 +20,7 @@ export interface ADFNode {
  * ADF Document structure (top-level document with version)
  */
 export interface ADFDocument extends ADFNode {
-  type: 'doc';
+  type: "doc";
   version: number;
   content: ADFNode[];
 }
@@ -87,7 +87,7 @@ export class ADFToMarkdownParser {
    * Parse array of content nodes
    */
   private parseContent(content: ADFNode[]): string {
-    return content.map(node => this.parseNode(node)).join("");
+    return content.map((node) => this.parseNode(node)).join("");
   }
 
   /**
@@ -136,7 +136,7 @@ export class ADFToMarkdownParser {
   private parseCodeBlock(node: ADFNode): string {
     const language = node.attrs?.language || "";
     const content = this.parseContent(node.content || []);
-    
+
     return `\`\`\`${language}\n${content}\n\`\`\`\n\n`;
   }
 
@@ -145,9 +145,9 @@ export class ADFToMarkdownParser {
    */
   private parseBulletList(node: ADFNode): string {
     const items = (node.content || [])
-      .map(item => this.parseListItem(item, "- "))
+      .map((item) => this.parseListItem(item, "- "))
       .join("");
-    
+
     return `${items}\n`;
   }
 
@@ -158,7 +158,7 @@ export class ADFToMarkdownParser {
     const items = (node.content || [])
       .map((item, index) => this.parseListItem(item, `${index + 1}. `))
       .join("");
-    
+
     return `${items}\n`;
   }
 
@@ -177,7 +177,7 @@ export class ADFToMarkdownParser {
     const level = node.attrs?.level || 1;
     const hashes = "#".repeat(Math.min(level as number, 6));
     const content = this.parseContent(node.content || []);
-    
+
     return `${hashes} ${content}\n\n`;
   }
 
@@ -187,8 +187,8 @@ export class ADFToMarkdownParser {
   private parseBlockquote(node: ADFNode): string {
     const content = this.parseContent(node.content || []);
     const lines = content.split("\n");
-    const quotedLines = lines.map(line => `> ${line}`).join("\n");
-    
+    const quotedLines = lines.map((line) => `> ${line}`).join("\n");
+
     return `${quotedLines}\n\n`;
   }
 
@@ -212,7 +212,7 @@ export class ADFToMarkdownParser {
 
     if (node.content) {
       return node.content
-        .map(childNode => this.extractTextFromNode(childNode))
+        .map((childNode) => this.extractTextFromNode(childNode))
         .join("");
     }
 
@@ -236,9 +236,11 @@ export function parseADF(adf: ADFNode | string | null | undefined): string {
 
 /**
  * Convenience function for extracting plain text from ADF
- * @param adf - ADF object or string  
+ * @param adf - ADF object or string
  * @returns Plain text string
  */
-export function extractTextFromADF(adf: ADFNode | string | null | undefined): string {
+export function extractTextFromADF(
+  adf: ADFNode | string | null | undefined,
+): string {
   return adfParser.extractPlainText(adf);
-} 
+}

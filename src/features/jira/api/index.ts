@@ -14,6 +14,25 @@ export type { JiraApiClient } from "./jira.client.types";
 
 // Configuration
 export type { JiraClientConfig } from "./jira.config.types";
+export {
+  JiraConfig,
+  validateJiraConfig,
+  defaultJiraConfig,
+} from "./jira.config.types";
+
+// Schemas and validation
+export {
+  issueKeySchema,
+  getIssueCommentsSchema,
+  searchJiraIssuesBaseSchema,
+  searchJiraIssuesSchema,
+  issueFieldsSchema,
+  buildJQLFromHelpers,
+  type GetIssueCommentsParams,
+  type SearchJiraIssuesParams,
+  type JiraIssue,
+  type JiraIssueList,
+} from "./jira.schemas";
 
 // HTTP interfaces
 export type { HttpClient, HttpRequestOptions } from "./jira.http.types";
@@ -39,10 +58,13 @@ export type {
 export {
   JiraApiError,
   JiraAuthenticationError,
+  JiraConfigError,
   JiraNetworkError,
   JiraNotFoundError,
   JiraRateLimitError,
   JiraPermissionError,
+  isJiraError,
+  formatJiraError,
   type JiraErrorResponse,
 } from "./jira.errors";
 

@@ -1,17 +1,17 @@
 /**
  * Search Issues Handler
  *
- * Handles searching JIRA issues using JQL queries with helper parameters
+ * MCP tool handler for searching JIRA issues with JQL or helper parameters
  */
-import { BaseToolHandler } from "@core/tools";
+import { BaseToolHandler } from "@core/tools/tool-handler.class";
 import { formatZodError } from "@core/utils/validation";
-import type { JiraClient } from "../../api/jira.client.impl";
-import { IssuesListFormatter } from "../../formatters/issues-list.formatter";
-import { 
-  searchJiraIssuesSchema, 
+import {
+  type SearchJiraIssuesParams,
   buildJQLFromHelpers,
-  type SearchJiraIssuesParams 
-} from "../utils/schemas";
+  searchJiraIssuesSchema,
+} from "@features/jira/api";
+import type { JiraClient } from "@features/jira/api/jira.client.impl";
+import { IssuesListFormatter } from "@features/jira/formatters/issues-list.formatter";
 
 // List of fields to retrieve for each issue in search results
 const SEARCH_FIELDS = [
@@ -64,7 +64,9 @@ export class SearchIssuesHandler extends BaseToolHandler<
 
       const searchParams = result.data;
 
-      this.logger.info(`Searching JIRA issues with params: ${JSON.stringify(searchParams)}`);
+      this.logger.info(
+        `Searching JIRA issues with params: ${JSON.stringify(searchParams)}`,
+      );
 
       // Ensure client is available
       if (!this.client) {
@@ -82,7 +84,7 @@ export class SearchIssuesHandler extends BaseToolHandler<
       const issues = await this.client.searchIssues(
         jqlQuery,
         fields,
-        searchParams.maxResults
+        searchParams.maxResults,
       );
 
       // Format the search results using the formatter
@@ -97,4 +99,4 @@ export class SearchIssuesHandler extends BaseToolHandler<
       throw error;
     }
   }
-} 
+}

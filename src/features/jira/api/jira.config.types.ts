@@ -1,10 +1,10 @@
+import { formatZodError } from "@core/utils/validation";
 /**
  * JIRA API Configuration
  *
  * Contains configuration for JIRA API
  */
 import { z } from "zod";
-import { formatZodError } from "@core/utils/validation";
 
 /**
  * Validation result interface
@@ -36,12 +36,34 @@ export const jiraConfigSchema = z.object({
    * API token for JIRA authentication
    */
   apiToken: z.string().nonempty("JIRA API token is required"),
+
+  /**
+   * Maximum number of retries for failed requests
+   */
+  maxRetries: z.number().int().nonnegative().default(3),
+
+  /**
+   * Timeout in milliseconds for requests
+   */
+  timeout: z.number().int().positive().default(10000),
 });
 
 /**
  * JIRA client configuration type
  */
 export type JiraClientConfig = z.infer<typeof jiraConfigSchema>;
+
+/**
+ * Default JIRA configuration values
+ * Values are loaded from environment variables when available
+ */
+export const defaultJiraConfig = {
+  hostUrl: process.env.JIRA_HOST || "",
+  username: process.env.JIRA_USERNAME || "",
+  apiToken: process.env.JIRA_API_TOKEN || "",
+  maxRetries: Number.parseInt(process.env.JIRA_MAX_RETRIES || "3", 10),
+  timeout: Number.parseInt(process.env.JIRA_TIMEOUT || "10000", 10),
+};
 
 /**
  * JIRA Configuration class
@@ -56,15 +78,11 @@ export class JiraConfig {
    *
    * @param config Configuration object or null to load from environment
    */
-  constructor(config?: JiraClientConfig) {
+  constructor(config?: Partial<JiraClientConfig>) {
     if (config) {
-      this.config = config;
+      this.config = { ...defaultJiraConfig, ...config } as JiraClientConfig;
     } else {
-      this.config = {
-        hostUrl: process.env.JIRA_HOST || "",
-        username: process.env.JIRA_USERNAME || "",
-        apiToken: process.env.JIRA_API_TOKEN || "",
-      };
+      this.config = defaultJiraConfig as JiraClientConfig;
     }
   }
 
@@ -74,7 +92,15 @@ export class JiraConfig {
    * @returns New JiraConfig instance
    */
   static fromEnv(): JiraConfig {
-    return new JiraConfig();
+    // Read environment variables at call time, not module load time
+    const envConfig = {
+      hostUrl: process.env.JIRA_HOST || "",
+      username: process.env.JIRA_USERNAME || "",
+      apiToken: process.env.JIRA_API_TOKEN || "",
+      maxRetries: Number.parseInt(process.env.JIRA_MAX_RETRIES || "3", 10),
+      timeout: Number.parseInt(process.env.JIRA_TIMEOUT || "10000", 10),
+    };
+    return new JiraConfig(envConfig);
   }
 
   /**
@@ -104,5 +130,33 @@ export class JiraConfig {
         formatZodError(new z.ZodError([err])),
       ),
     };
+  }
+}
+
+/**
+ * Validates JIRA configuration
+ *
+ * @param config - Configuration to validate
+ * @returns Validated configuration
+ * @throws Error if configuration is invalid
+ */
+export function validateJiraConfig(
+  config: Partial<JiraClientConfig> = {},
+): JiraClientConfig {
+  const mergedConfig = {
+    ...defaultJiraConfig,
+    ...config,
+  };
+
+  try {
+    return jiraConfigSchema.parse(mergedConfig);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.errors
+        .map((err) => `${err.path.join(".")}: ${err.message}`)
+        .join(", ");
+      throw new Error(`Invalid JIRA configuration: ${errorMessages}`);
+    }
+    throw error;
   }
 }

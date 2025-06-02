@@ -71,7 +71,7 @@ export class JiraHttpClient implements HttpClient {
         throw error;
       }
 
-      // Convert other errors to JiraNetworkError
+      // Enhanced network error handling with specific messages
       logger.error(
         `Network error: ${error instanceof Error ? error.message : String(error)}`,
         {
@@ -79,9 +79,33 @@ export class JiraHttpClient implements HttpClient {
         },
       );
 
-      throw new JiraNetworkError(
-        `Network error: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      // Provide more specific error messages based on the error type
+      let networkErrorMessage: string;
+
+      if (error instanceof TypeError) {
+        if (error.message.includes("fetch")) {
+          networkErrorMessage =
+            "Unable to connect. Is the computer able to access the url?";
+        } else {
+          networkErrorMessage = `Network connection failed: ${error.message}`;
+        }
+      } else if (error instanceof Error) {
+        // Check for specific error patterns
+        const message = error.message.toLowerCase();
+        if (message.includes("timeout")) {
+          networkErrorMessage = `Request timeout: ${error.message}`;
+        } else if (message.includes("network") || message.includes("dns")) {
+          networkErrorMessage = `Network error: ${error.message}`;
+        } else if (message.includes("refused") || message.includes("connect")) {
+          networkErrorMessage = `Connection refused: ${error.message}`;
+        } else {
+          networkErrorMessage = `Network request failed: ${error.message}`;
+        }
+      } else {
+        networkErrorMessage = `Network error: ${String(error)}`;
+      }
+
+      throw new JiraNetworkError(networkErrorMessage);
     }
   }
 
@@ -161,13 +185,19 @@ export class JiraHttpClient implements HttpClient {
     try {
       errorData = (await response.json()) as JiraErrorResponse;
     } catch (_e) {
+      // Provide more specific fallback error message
+      const statusText = response.statusText || `HTTP ${response.status}`;
       errorData = {
-        errorMessages: [response.statusText || "Unknown error"],
+        errorMessages: [statusText],
         errors: {},
       };
     }
 
-    const errorMessage = errorData.errorMessages?.[0] || "Unknown error";
+    // Extract error message with better fallback
+    const errorMessage =
+      errorData.errorMessages?.[0] ||
+      response.statusText ||
+      `HTTP ${response.status} error`;
 
     // Handle different HTTP status codes
     switch (response.status) {
@@ -177,12 +207,22 @@ export class JiraHttpClient implements HttpClient {
           response.status,
           errorData,
         );
-      default:
+      case 404:
+        throw new JiraApiError(errorMessage, response.status, errorData);
+      case 403:
         throw new JiraApiError(
-          errorMessage || `API error: ${response.statusText}`,
+          `Access forbidden: ${errorMessage}`,
           response.status,
           errorData,
         );
+      case 429:
+        throw new JiraApiError(
+          `Rate limit exceeded: ${errorMessage}`,
+          response.status,
+          errorData,
+        );
+      default:
+        throw new JiraApiError(errorMessage, response.status, errorData);
     }
   }
 }

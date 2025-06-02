@@ -3,9 +3,9 @@
  * Utilities for creating and managing mocks across test suites
  */
 
-import { mock, type Mock } from 'bun:test';
-import { mockFactory } from '../mocks/jira-mock-factory';
-import type { Issue, SearchResult } from '../../features/jira/api/jira.models.types';
+import { type Mock, mock } from "bun:test";
+import type { Issue, SearchResult } from "@features/jira/api/jira.models.types";
+import { mockFactory } from "../mocks/jira-mock-factory";
 
 interface MockResponse {
   ok: boolean;
@@ -31,13 +31,13 @@ export const mockHttp = {
    * Mock a successful JIRA API response
    */
   mockJiraApiSuccess(endpoint: string, responseData: unknown): FetchMock {
-    const fetchMock = mock(() => 
+    const fetchMock = mock(() =>
       Promise.resolve({
         ok: true,
         status: 200,
         json: () => Promise.resolve(responseData),
-        text: () => Promise.resolve(JSON.stringify(responseData))
-      })
+        text: () => Promise.resolve(JSON.stringify(responseData)),
+      }),
     );
 
     mocks.set(endpoint, fetchMock);
@@ -48,19 +48,23 @@ export const mockHttp = {
   /**
    * Mock a JIRA API error response
    */
-  mockJiraApiError(endpoint: string, status: number, message: string): FetchMock {
-    const errorResponse: JiraErrorResponse = { 
+  mockJiraApiError(
+    endpoint: string,
+    status: number,
+    message: string,
+  ): FetchMock {
+    const errorResponse: JiraErrorResponse = {
       errorMessages: [message],
-      errors: {}
+      errors: {},
     };
 
-    const fetchMock = mock(() => 
+    const fetchMock = mock(() =>
       Promise.resolve({
         ok: false,
         status,
         json: () => Promise.resolve(errorResponse),
-        text: () => Promise.resolve(JSON.stringify(errorResponse))
-      })
+        text: () => Promise.resolve(JSON.stringify(errorResponse)),
+      }),
     );
 
     mocks.set(endpoint, fetchMock);
@@ -72,9 +76,7 @@ export const mockHttp = {
    * Mock network failure
    */
   mockNetworkError(endpoint: string): Mock<() => Promise<never>> {
-    const fetchMock = mock(() => 
-      Promise.reject(new Error('Network error'))
-    );
+    const fetchMock = mock(() => Promise.reject(new Error("Network error")));
 
     mocks.set(endpoint, fetchMock);
     (global as { fetch: unknown }).fetch = fetchMock;
@@ -94,7 +96,7 @@ export const mockHttp = {
    */
   getMock(endpoint: string): FetchMock | undefined {
     return mocks.get(endpoint);
-  }
+  },
 };
 
 /**
@@ -106,12 +108,11 @@ export const jiraApiMocks = {
    */
   mockGetIssue(issueKey: string, scenario?: string): FetchMock {
     const scenarioData = scenario ? mockFactory.getScenario(scenario) : null;
-    const issue = scenarioData?.data.issues?.[0] || mockFactory.createMockIssue({ key: issueKey });
-    
-    return mockHttp.mockJiraApiSuccess(
-      `/rest/api/3/issue/${issueKey}`,
-      issue
-    );
+    const issue =
+      scenarioData?.data.issues?.[0] ||
+      mockFactory.createMockIssue({ key: issueKey });
+
+    return mockHttp.mockJiraApiSuccess(`/rest/api/3/issue/${issueKey}`, issue);
   },
 
   /**
@@ -119,12 +120,10 @@ export const jiraApiMocks = {
    */
   mockSearchIssues(scenario?: string): FetchMock {
     const scenarioData = scenario ? mockFactory.getScenario(scenario) : null;
-    const searchResult = scenarioData?.data.searchResults || mockFactory.createMockSearchResult();
-    
-    return mockHttp.mockJiraApiSuccess(
-      '/rest/api/3/search',
-      searchResult
-    );
+    const searchResult =
+      scenarioData?.data.searchResults || mockFactory.createMockSearchResult();
+
+    return mockHttp.mockJiraApiSuccess("/rest/api/3/search", searchResult);
   },
 
   /**
@@ -132,11 +131,12 @@ export const jiraApiMocks = {
    */
   mockGetAssignedIssues(scenario?: string): FetchMock {
     const scenarioData = scenario ? mockFactory.getScenario(scenario) : null;
-    const searchResult = scenarioData?.data.searchResults || mockFactory.createMockSearchResult();
-    
+    const searchResult =
+      scenarioData?.data.searchResults || mockFactory.createMockSearchResult();
+
     return mockHttp.mockJiraApiSuccess(
-      '/rest/api/3/search?jql=assignee=currentUser()',
-      searchResult
+      "/rest/api/3/search?jql=assignee=currentUser()",
+      searchResult,
     );
   },
 
@@ -147,7 +147,7 @@ export const jiraApiMocks = {
     return mockHttp.mockJiraApiError(
       `/rest/api/3/issue/${issueKey}`,
       404,
-      `Issue Does Not Exist: ${issueKey}`
+      `Issue Does Not Exist: ${issueKey}`,
     );
   },
 
@@ -156,9 +156,9 @@ export const jiraApiMocks = {
    */
   mockAuthError(): FetchMock {
     return mockHttp.mockJiraApiError(
-      '/rest/api/3/issue/TEST-1',
+      "/rest/api/3/issue/TEST-1",
       401,
-      'Authentication failed'
+      "Authentication failed",
     );
   },
 
@@ -169,7 +169,7 @@ export const jiraApiMocks = {
     return mockHttp.mockJiraApiError(
       `/rest/api/3/issue/${issueKey}`,
       403,
-      'Forbidden - insufficient permissions'
+      "Forbidden - insufficient permissions",
     );
   },
 
@@ -192,7 +192,7 @@ export const jiraApiMocks = {
    */
   clearMocks() {
     mockHttp.clearAllMocks();
-  }
+  },
 };
 
 /**
@@ -202,7 +202,7 @@ export const testDataBuilder = {
   /**
    * Create issue with specific status
    */
-  issueWithStatus(status: string, statusColor = 'blue'): Issue {
+  issueWithStatus(status: string, statusColor = "blue"): Issue {
     return mockFactory.createMockIssue({
       fields: {
         ...mockFactory.createMockIssue().fields,
@@ -210,10 +210,10 @@ export const testDataBuilder = {
           name: status,
           statusCategory: {
             name: status,
-            colorName: statusColor
-          }
-        }
-      }
+            colorName: statusColor,
+          },
+        },
+      },
     });
   },
 
@@ -224,8 +224,8 @@ export const testDataBuilder = {
     return mockFactory.createMockIssue({
       fields: {
         ...mockFactory.createMockIssue().fields,
-        priority: { name: priority }
-      }
+        priority: { name: priority },
+      },
     });
   },
 
@@ -233,19 +233,19 @@ export const testDataBuilder = {
    * Create search result with specific count
    */
   searchResultWithCount(count: number): SearchResult {
-    const issues = Array.from({ length: count }, (_, i) => 
+    const issues = Array.from({ length: count }, (_, i) =>
       mockFactory.createMockIssue({
         key: `TEST-${i + 1}`,
         fields: {
           ...mockFactory.createMockIssue().fields,
-          summary: `Test issue ${i + 1}`
-        }
-      })
+          summary: `Test issue ${i + 1}`,
+        },
+      }),
     );
 
     return mockFactory.createMockSearchResult({
       total: count,
-      issues
+      issues,
     });
   },
 
@@ -255,7 +255,7 @@ export const testDataBuilder = {
   emptySearchResult(): SearchResult {
     return mockFactory.createMockSearchResult({
       total: 0,
-      issues: []
+      issues: [],
     });
-  }
-}; 
+  },
+};

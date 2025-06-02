@@ -1,39 +1,61 @@
 {
-  "name": "jira-mcp-server",
-  "version": "0.3.1",
-  "description": "JIRA MCP Server",
+  "name": "@dsazz/mcp-jira",
+  "version": "0.4.0",
+  "description": "A powerful Model Context Protocol (MCP) server for Atlassian JIRA integration. Access JIRA projects, manage issues, and streamline development workflows directly from any MCP-compatible editor or application.",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "mcp-jira": "dist/index.js"
+  },
+  "files": ["dist/", "README.md", "LICENSE", "CHANGELOG.md"],
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target node",
     "start": "node dist/index.js",
+    "prepublishOnly": "bun run build",
     "format": "bunx biome format --write ./src",
     "lint": "bunx biome lint ./src",
     "check": "bunx biome check ./src",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "inspect": "bun inspector.js",
-    "cleanup-ports": "kill -9 $(lsof -ti:5173,3001) 2>/dev/null || true && echo 'Ports 5173 and 3001 have been released'"
+    "inspect": "bunx @modelcontextprotocol/inspector bun ./dist/index.js"
   },
   "keywords": [
     "mcp",
     "model-context-protocol",
+    "jira",
+    "atlassian",
     "cursor",
     "claude",
     "typescript",
     "bun",
-    "biome"
+    "biome",
+    "server",
+    "integration",
+    "api",
+    "issues",
+    "project-management",
+    "agile",
+    "development"
   ],
   "author": "Stanislav Stepanenko <dev.stanislav.stepanenko@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dsazz/mcp-jira.git"
+  },
+  "homepage": "https://github.com/Dsazz/mcp-jira#readme",
+  "bugs": {
+    "url": "https://github.com/Dsazz/mcp-jira/issues"
+  },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.12.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
     "dotenv": "16.5.0",
     "zod": "3.25.31"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@modelcontextprotocol/inspector": "^0.13.0",
+    "@types/bun": "^1.2.15",
     "@types/node": "^20.11.28",
     "typescript": "^5.4.3"
   },

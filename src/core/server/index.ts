@@ -1,11 +1,11 @@
+import { normalizeError } from "@core/errors";
+import { logger } from "@core/logging";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 /**
  * Server Module
  *
  * Main exports for the server module
  */
-import { normalizeError } from "../errors";
-import { logger } from "../logging";
 import { initializeServer } from "./server.lifecycle";
 
 /**

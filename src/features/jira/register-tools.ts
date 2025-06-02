@@ -1,14 +1,25 @@
+import { getLogger } from "@core/logging";
+import { adaptHandler } from "@core/responses";
+import type { ToolConfig } from "@core/tools";
+import {
+  getIssueCommentsSchema,
+  issueKeySchema,
+  searchJiraIssuesBaseSchema,
+} from "@features/jira/api";
 /**
  * Register JIRA tools with MCP
  */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getLogger } from "@core/logging";
-import { adaptHandler } from "@core/responses";
-import type { ToolConfig } from "@core/tools";
 import { JiraClient } from "./api/jira.client.impl";
 import { JiraConfig } from "./api/jira.config.types";
+import {
+  createIssueParamsSchema,
+  getBoardsParamsSchema,
+  getProjectsParamsSchema,
+  getSprintsParamsSchema,
+  updateIssueParamsSchema,
+} from "./api/jira.schemas";
 import { createJiraTools } from "./tools";
-import { issueKeySchema, searchJiraIssuesBaseSchema, getIssueCommentsSchema } from "./tools/utils/schemas";
 
 // Logger instance
 const logger = getLogger("jira");
@@ -52,16 +63,45 @@ export function registerTools(server: McpServer): void {
         handler: (args: unknown) => jiraTools.getAssignedIssues.handle(args),
       },
       {
-        name: "jira_create_task",
-        description: "Creates a local task from a JIRA issue",
-        params: { issueKey: issueKeySchema },
-        handler: (args: unknown) => jiraTools.createTask.handle(args),
+        name: "jira_create_issue",
+        description: "Creates a new JIRA issue with specified parameters",
+        params: createIssueParamsSchema.shape,
+        handler: (args: unknown) => jiraTools.createIssue.handle(args),
+      },
+      {
+        name: "jira_update_issue",
+        description:
+          "Updates an existing JIRA issue with field changes, status transitions, and worklog entries",
+        params: updateIssueParamsSchema.shape,
+        handler: (args: unknown) => jiraTools.updateIssue.handle(args),
       },
       {
         name: "search_jira_issues",
-        description: "Search JIRA issues using JQL queries or helper parameters. Supports both expert JQL and beginner-friendly filters.",
+        description:
+          "Search JIRA issues using JQL queries or helper parameters. Supports both expert JQL and beginner-friendly filters.",
         params: searchJiraIssuesBaseSchema.shape,
         handler: (args: unknown) => jiraTools.searchIssues.handle(args),
+      },
+      {
+        name: "jira_get_projects",
+        description:
+          "Get all accessible JIRA projects with filtering and search capabilities",
+        params: getProjectsParamsSchema.shape,
+        handler: (args: unknown) => jiraTools.getProjects.handle(args),
+      },
+      {
+        name: "jira_get_boards",
+        description:
+          "Get all accessible JIRA boards with filtering by type, project, and name",
+        params: getBoardsParamsSchema.shape,
+        handler: (args: unknown) => jiraTools.getBoards.handle(args),
+      },
+      {
+        name: "jira_get_sprints",
+        description:
+          "Get all sprints for a specific JIRA board with filtering by state",
+        params: getSprintsParamsSchema.shape,
+        handler: (args: unknown) => jiraTools.getSprints.handle(args),
       },
     ];
 
