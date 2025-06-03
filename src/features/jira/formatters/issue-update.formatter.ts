@@ -1,11 +1,11 @@
+import { parseADF } from "@features/jira/parsers/adf.parser";
 /**
  * Issue Update Formatter
  *
  * Formats responses for successful issue updates with professional output,
  * change summaries, and next action guidance
  */
-import type { Issue } from "@features/jira/api/jira.models.types";
-import { parseADF } from "@features/jira/parsers/adf-parser";
+import type { Issue } from "@features/jira/repositories/issue.models";
 
 /**
  * Update context information for formatting

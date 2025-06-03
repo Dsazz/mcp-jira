@@ -1,17 +1,16 @@
 /**
- * JIRA Mock Factory
- * Centralized mock data generation for JIRA MCP Server testing
- * Provides realistic test data and scenarios for comprehensive testing
+ * JIRA Mock Data Factory
+ *
+ * Centralized factory for creating mock JIRA data for testing
+ * Provides consistent test data across all test suites
  */
 
-import type {
-  Issue,
-  SearchResult,
-  User,
-} from "@features/jira/api/jira.models.types";
-
-import type { Board, Sprint } from "@features/jira/api/jira.client.types";
-import type { ADFNode } from "@features/jira/parsers/adf-parser";
+import type { ADFNode } from "@features/jira/parsers/adf.parser";
+import type { Board } from "@features/jira/repositories/board.types";
+import type { Issue } from "@features/jira/repositories/issue.models";
+import type { SearchResult } from "@features/jira/repositories/search.models";
+import type { Sprint } from "@features/jira/repositories/sprint.types";
+import type { User } from "@features/jira/repositories/user.models";
 
 export interface ADFDocument extends ADFNode {
   version: number;
@@ -23,11 +22,31 @@ export interface MockProject {
   key: string;
   name: string;
   projectTypeKey: string;
+  simplified: boolean;
+  style: string;
+  isPrivate: boolean;
+  description?: string;
+  lead?: User;
   projectCategory?: {
     id: string;
     name: string;
     description: string;
   };
+  components?: Array<{
+    id: string;
+    name: string;
+  }>;
+  versions?: Array<{
+    id: string;
+    name: string;
+    released: boolean;
+    archived: boolean;
+  }>;
+  issueTypes?: Array<{
+    id: string;
+    name: string;
+    subtask: boolean;
+  }>;
 }
 
 export interface MockScenario {
@@ -152,18 +171,40 @@ function buggyFunction() {
   }
 
   createMockProject(overrides: Partial<MockProject> = {}): MockProject {
-    const defaults: MockProject = {
-      id: `proj-${Math.random().toString(36).substr(2, 9)}`,
+    return {
+      id: "10001",
       key: "TEST",
       name: "Test Project",
       projectTypeKey: "software",
+      simplified: false,
+      style: "classic",
+      isPrivate: false,
+      description: "A test project for development",
+      lead: this.createMockUser({
+        accountId: "lead-123",
+        displayName: "Project Lead",
+        emailAddress: "lead@company.com",
+      }),
       projectCategory: {
         id: "10001",
         name: "Development",
         description: "Software development projects",
       },
+      components: [
+        { id: "10001", name: "Frontend" },
+        { id: "10002", name: "Backend" },
+      ],
+      versions: [
+        { id: "10001", name: "v1.0.0", released: true, archived: false },
+        { id: "10002", name: "v1.1.0", released: false, archived: false },
+      ],
+      issueTypes: [
+        { id: "10001", name: "Task", subtask: false },
+        { id: "10002", name: "Bug", subtask: false },
+        { id: "10003", name: "Sub-task", subtask: true },
+      ],
+      ...overrides,
     };
-    return { ...defaults, ...overrides };
   }
 
   createMockBoard(overrides: Partial<Board> = {}): Board {

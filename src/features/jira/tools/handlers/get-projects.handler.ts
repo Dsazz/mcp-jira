@@ -1,29 +1,22 @@
 /**
  * Get Projects Handler
  *
- * Handles retrieving JIRA projects with comprehensive filtering,
- * permission checking, and professional formatting
+ * MCP tool handler for retrieving JIRA projects with filtering and search capabilities
  */
-import { BaseToolHandler } from "@core/tools";
-import { formatZodError } from "@core/utils/validation";
-import type { JiraClient } from "@features/jira/api/jira.client.impl";
+import { BaseToolHandler } from "@core/tools/tool-handler.class";
 import {
   JiraApiError,
+  JiraNotFoundError,
   JiraPermissionError,
-} from "@features/jira/api/jira.errors";
-import {
-  type GetProjectsParams,
-  getProjectsParamsSchema,
-} from "@features/jira/api/jira.schemas";
-import type { GetProjectsOptions, Project } from "../../api/jira.client.types";
-import {
-  type ProjectListContext,
-  ProjectListFormatter,
-} from "../../formatters/project-list.formatter";
+} from "@features/jira/client/errors";
+import { ProjectListFormatter } from "@features/jira/formatters/project-list.formatter";
+import type { GetProjectsUseCase } from "@features/jira/use-cases";
+import type { GetProjectsParams } from "@features/jira/validators";
+import type { ProjectParamsValidator } from "@features/jira/validators";
 
 /**
  * Handler for retrieving JIRA projects
- * Provides comprehensive project discovery with filtering and rich responses
+ * Provides comprehensive project listing with filtering and search capabilities
  */
 export class GetProjectsHandler extends BaseToolHandler<
   GetProjectsParams,
@@ -32,144 +25,48 @@ export class GetProjectsHandler extends BaseToolHandler<
   private readonly formatter: ProjectListFormatter;
 
   /**
-   * Create a new GetProjectsHandler with client
+   * Create a new GetProjectsHandler with use case and validator
    *
-   * @param client - JIRA API client to use for requests
+   * @param getProjectsUseCase - Use case for retrieving projects
+   * @param projectParamsValidator - Validator for project parameters
    */
-  constructor(private readonly client?: JiraClient) {
+  constructor(
+    private readonly getProjectsUseCase: GetProjectsUseCase,
+    private readonly projectParamsValidator: ProjectParamsValidator,
+  ) {
     super("JIRA", "Get Projects");
     this.formatter = new ProjectListFormatter();
   }
 
   /**
    * Execute the handler logic
-   * Retrieves JIRA projects with comprehensive filtering and formatting
+   * Retrieves JIRA projects with optional filtering and formatting
    *
    * @param params - Parameters for project retrieval
    */
   protected async execute(params: GetProjectsParams): Promise<string> {
     try {
       // Step 1: Validate parameters
-      const validatedParams = this.validateParameters(params);
-      this.logger.info("Retrieving JIRA projects with filters");
+      const validatedParams =
+        this.projectParamsValidator.validateGetProjectsParams(params);
+      this.logger.info("Getting JIRA projects");
 
-      // Step 2: Ensure client is available
-      if (!this.client) {
-        throw new Error("JIRA client not initialized");
-      }
-
-      // Step 3: Transform parameters to API options
-      const options = this.transformToApiOptions(validatedParams);
-
-      // Step 4: Retrieve projects
-      this.logger.debug("Fetching projects with options:", {
-        hasSearch: !!options.searchQuery,
-        hasTypeFilter: !!options.typeKey,
-        maxResults: options.maxResults,
+      // Step 2: Get projects using use case
+      this.logger.debug("Retrieving projects with params:", {
+        hasSearch: !!validatedParams.searchQuery,
+        hasTypeFilter: !!validatedParams.typeKey,
+        maxResults: validatedParams.maxResults,
       });
 
-      const projects = await this.client.getProjects(options);
+      const projects = await this.getProjectsUseCase.execute(validatedParams);
 
-      // Step 5: Determine context for formatting
-      const context = this.buildFormattingContext(validatedParams, projects);
-
-      // Step 6: Format and return response
+      // Step 3: Format and return success response
       this.logger.info(`Successfully retrieved ${projects.length} projects`);
-      return this.formatter.format(projects, context);
+      return this.formatter.format(projects);
     } catch (error) {
-      this.logger.error(`Failed to retrieve JIRA projects: ${error}`);
+      this.logger.error(`Failed to get JIRA projects: ${error}`);
       throw this.enhanceError(error, params);
     }
-  }
-
-  /**
-   * Validate parameters using Zod schema
-   */
-  private validateParameters(params: GetProjectsParams): GetProjectsParams {
-    const result = getProjectsParamsSchema.safeParse(params);
-
-    if (!result.success) {
-      const errorMessage = `Invalid project retrieval parameters: ${formatZodError(
-        result.error,
-      )}`;
-      throw new JiraApiError(errorMessage, 400);
-    }
-
-    return result.data;
-  }
-
-  /**
-   * Transform handler parameters to API options
-   */
-  private transformToApiOptions(params: GetProjectsParams): GetProjectsOptions {
-    const options: GetProjectsOptions = {};
-
-    if (params.expand) {
-      options.expand = params.expand;
-    }
-
-    if (params.recent) {
-      options.recent = params.recent;
-    }
-
-    if (params.typeKey) {
-      options.typeKey = params.typeKey;
-    }
-
-    if (params.categoryId) {
-      options.categoryId = params.categoryId;
-    }
-
-    if (params.searchQuery) {
-      options.searchQuery = params.searchQuery;
-    }
-
-    if (params.orderBy) {
-      options.orderBy = params.orderBy;
-    }
-
-    if (params.maxResults) {
-      options.maxResults = params.maxResults;
-    }
-
-    if (params.startAt) {
-      options.startAt = params.startAt;
-    }
-
-    return options;
-  }
-
-  /**
-   * Build formatting context from parameters and results
-   */
-  private buildFormattingContext(
-    params: GetProjectsParams,
-    projects: Project[],
-  ): ProjectListContext {
-    const context: ProjectListContext = {};
-
-    if (params.searchQuery) {
-      context.searchQuery = params.searchQuery;
-    }
-
-    if (params.orderBy) {
-      context.orderBy = params.orderBy;
-    }
-
-    // Determine if filters were applied
-    context.filterApplied = !!(
-      params.typeKey ||
-      params.categoryId ||
-      params.searchQuery ||
-      params.recent
-    );
-
-    // Check if there might be more results
-    if (params.maxResults && projects.length === params.maxResults) {
-      context.hasMore = true;
-    }
-
-    return context;
   }
 
   /**
@@ -177,6 +74,12 @@ export class GetProjectsHandler extends BaseToolHandler<
    */
   private enhanceError(error: unknown, params?: GetProjectsParams): Error {
     const filterContext = this.getFilterContext(params);
+
+    if (error instanceof JiraNotFoundError) {
+      return new Error(
+        `❌ **No Projects Found**\n\nNo projects found${filterContext}.\n\n**Solutions:**\n- Check your search query is correct\n- Try removing filters to see all projects\n- Verify you have permission to view projects\n\n**Example:** \`jira_get_projects searchQuery="web"\``,
+      );
+    }
 
     if (error instanceof JiraPermissionError) {
       return new Error(
@@ -218,8 +121,28 @@ export class GetProjectsHandler extends BaseToolHandler<
 
   /**
    * Get the schema for this handler
+   * TODO: We have to specify the schema for the handler
    */
   static getSchema() {
-    return getProjectsParamsSchema;
+    return {
+      type: "object",
+      properties: {
+        expand: {
+          type: "array",
+          items: { type: "string" },
+        },
+        recent: { type: "number" },
+        properties: {
+          type: "array",
+          items: { type: "string" },
+        },
+        maxResults: { type: "number" },
+        startAt: { type: "number" },
+        typeKey: { type: "string" },
+        categoryId: { type: "number" },
+        searchQuery: { type: "string" },
+        orderBy: { type: "string" },
+      },
+    };
   }
 }

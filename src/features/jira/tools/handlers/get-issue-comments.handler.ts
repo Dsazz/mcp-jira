@@ -1,23 +1,21 @@
 /**
  * Get Issue Comments Handler
  *
- * Handles retrieving comments for a specific JIRA issue with configurable options
+ * MCP tool handler for retrieving JIRA issue comments
  */
 import { BaseToolHandler } from "@core/tools/tool-handler.class";
-import { formatZodError } from "@core/utils/validation";
 import {
-  type GetIssueCommentsParams,
-  getIssueCommentsSchema,
-} from "@features/jira/api";
-import type { JiraClient } from "@features/jira/api/jira.client.impl";
-import type {
-  Comment,
-  GetCommentsOptions,
-} from "@features/jira/api/jira.models.types";
+  JiraApiError,
+  JiraNotFoundError,
+  JiraPermissionError,
+} from "@features/jira/client/errors";
 import {
   type CommentsContext,
   CommentsFormatter,
 } from "@features/jira/formatters/comments.formatter";
+import type { GetIssueCommentsUseCase } from "@features/jira/use-cases";
+import type { GetIssueCommentsParams } from "@features/jira/validators";
+import type { IssueCommentValidator } from "@features/jira/validators";
 
 /**
  * Handler for retrieving and formatting JIRA issue comments
@@ -30,11 +28,15 @@ export class GetIssueCommentsHandler extends BaseToolHandler<
   private formatter: CommentsFormatter;
 
   /**
-   * Create a new GetIssueCommentsHandler with client
+   * Create a new GetIssueCommentsHandler with use case and validator
    *
-   * @param client - JIRA API client to use for requests
+   * @param getIssueCommentsUseCase - Use case for issue comment operations
+   * @param issueCommentValidator - Validator for issue comment parameters
    */
-  constructor(private readonly client?: JiraClient) {
+  constructor(
+    private readonly getIssueCommentsUseCase: GetIssueCommentsUseCase,
+    private readonly issueCommentValidator: IssueCommentValidator,
+  ) {
     super("JIRA", "Get Issue Comments");
     this.formatter = new CommentsFormatter();
   }
@@ -47,111 +49,99 @@ export class GetIssueCommentsHandler extends BaseToolHandler<
    */
   protected async execute(params: GetIssueCommentsParams): Promise<string> {
     try {
-      // Validate parameters
-      const result = getIssueCommentsSchema.safeParse(params);
-      if (!result.success) {
-        const errorMessage = `Invalid comment parameters: ${formatZodError(
-          result.error,
-        )}`;
-        throw new Error(errorMessage);
-      }
-
-      const validatedParams = result.data;
+      // Step 1: Validate parameters
+      const validatedParams =
+        this.issueCommentValidator.validateGetCommentsParams(params);
       this.logger.info(
         `Getting comments for JIRA issue: ${validatedParams.issueKey}`,
       );
 
-      // Ensure client is available
-      if (!this.client) {
-        throw new Error("JIRA client not initialized");
-      }
-
-      // Build API options from validated parameters
-      const apiOptions: GetCommentsOptions = {
+      // Step 2: Get comments using use case
+      this.logger.debug("Retrieving comments with params:", {
+        issueKey: validatedParams.issueKey,
+        hasAuthorFilter: !!validatedParams.authorFilter,
+        hasDateRange: !!validatedParams.dateRange,
+        includeInternal: validatedParams.includeInternal,
         maxComments: validatedParams.maxComments,
-        orderBy: validatedParams.orderBy,
-        expand: ["renderedBody"], // Always expand rendered body for better parsing
-      };
+      });
 
-      // Get all comments from API (we'll filter client-side for advanced options)
-      const allComments = await this.client.getIssueComments(
-        validatedParams.issueKey,
-        apiOptions,
-      );
+      const comments =
+        await this.getIssueCommentsUseCase.execute(validatedParams);
 
-      // Apply client-side filtering for advanced parameters
-      const filteredComments = this.applyAdvancedFiltering(
-        allComments,
-        validatedParams,
-      );
-
-      // Create formatting context
+      // Step 3: Create formatting context
       const context: CommentsContext = {
         issueKey: validatedParams.issueKey,
-        totalComments: allComments.length,
-        maxDisplayed: filteredComments.length,
+        totalComments: comments.length,
+        maxDisplayed: comments.length,
       };
 
-      // Format the comments using the formatter
-      return this.formatter.format({ comments: filteredComments, context });
+      // Step 4: Format the comments using the formatter
+      return this.formatter.format({ comments, context });
     } catch (error) {
       this.logger.error(`Failed to get comments: ${error}`);
-      throw error;
+      throw this.enhanceError(error, params);
     }
   }
 
   /**
-   * Apply advanced filtering options to comments
-   * Handles client-side filtering for parameters not supported by JIRA API
+   * Enhance error messages for better user guidance
    */
-  private applyAdvancedFiltering(
-    comments: Comment[],
-    params: GetIssueCommentsParams,
-  ): Comment[] {
-    let filtered = [...comments];
+  private enhanceError(error: unknown, params?: GetIssueCommentsParams): Error {
+    const issueContext = params?.issueKey
+      ? ` for issue ${params.issueKey}`
+      : "";
 
-    // Filter by author if specified
-    if (params.authorFilter) {
-      const authorFilter = params.authorFilter.toLowerCase();
-      filtered = filtered.filter(
-        (comment) =>
-          comment.author?.displayName?.toLowerCase().includes(authorFilter) ||
-          comment.author?.emailAddress?.toLowerCase().includes(authorFilter),
+    if (error instanceof JiraNotFoundError) {
+      return new Error(
+        `❌ **No Comments Found**\n\nNo comments found${issueContext}.\n\n**Solutions:**\n- Verify the issue key is correct\n- Check if the issue has any comments\n- Try including internal comments\n- Use \`jira_get_issue\` to verify the issue exists\n\n**Example:** \`jira_get_issue_comments issueKey="PROJ-123"\``,
       );
     }
 
-    // Filter by date range if specified
-    if (params.dateRange) {
-      filtered = filtered.filter((comment) => {
-        const commentDate = new Date(comment.created);
-
-        if (params.dateRange?.from) {
-          const fromDate = new Date(params.dateRange.from);
-          if (commentDate < fromDate) return false;
-        }
-
-        if (params.dateRange?.to) {
-          const toDate = new Date(params.dateRange.to);
-          if (commentDate > toDate) return false;
-        }
-
-        return true;
-      });
+    if (error instanceof JiraPermissionError) {
+      return new Error(
+        `❌ **Permission Denied**\n\nYou don't have permission to view comments${issueContext}.\n\n**Solutions:**\n- Check your JIRA permissions\n- Contact your JIRA administrator\n- Verify you have access to the issue\n- Use \`jira_get_issue\` to see accessible issues\n\n**Required Permissions:** Browse Projects`,
+      );
     }
 
-    // Filter internal comments if not requested
-    if (!params.includeInternal) {
-      filtered = filtered.filter((comment) => {
-        // Include comment if it's public (no visibility restrictions and jsdPublic is not false)
-        return !comment.visibility && comment.jsdPublic !== false;
-      });
+    if (error instanceof JiraApiError) {
+      return new Error(
+        `❌ **JIRA API Error**\n\n${error.message}\n\n**Solutions:**\n- Verify the issue key is valid\n- Check your filter parameters\n- Try with different filters\n\n**Example:** \`jira_get_issue_comments issueKey="PROJ-123" maxComments=5\``,
+      );
     }
 
-    // Apply maxComments limit to final filtered results
-    if (params.maxComments && filtered.length > params.maxComments) {
-      filtered = filtered.slice(0, params.maxComments);
+    if (error instanceof Error) {
+      return new Error(
+        `❌ **Comments Retrieval Failed**\n\n${error.message}${issueContext}\n\n**Solutions:**\n- Check your parameters are valid\n- Try a simpler query first\n- Verify your JIRA connection\n\n**Example:** \`jira_get_issue_comments issueKey="PROJ-123"\``,
+      );
     }
 
-    return filtered;
+    return new Error(
+      `❌ **Unknown Error**\n\nAn unknown error occurred during comment retrieval${issueContext}.\n\nPlease check your parameters and try again.`,
+    );
+  }
+
+  /**
+   * Get the schema for this handler
+   * TODO: We have to specify the schema for the handler
+   */
+  static getSchema() {
+    return {
+      type: "object",
+      properties: {
+        issueKey: { type: "string" },
+        maxComments: { type: "number" },
+        includeInternal: { type: "boolean" },
+        orderBy: { type: "string" },
+        authorFilter: { type: "string" },
+        dateRange: {
+          type: "object",
+          properties: {
+            from: { type: "string" },
+            to: { type: "string" },
+          },
+        },
+      },
+      required: ["issueKey"],
+    };
   }
 }

@@ -4,7 +4,7 @@
  * Formats JIRA project lists with comprehensive project information,
  * filtering details, and professional presentation
  */
-import type { Project } from "../api/jira.client.types";
+import type { Project } from "../repositories/project.types";
 
 /**
  * Context information for project list formatting

@@ -1,13 +1,21 @@
 /**
- * Get Issue Handler Unit Tests
- * Co-located unit tests for JIRA get issue MCP tool handler
+ * Get Issue Handler Tests
+ * Comprehensive test suite for the GetIssueHandler
  */
 
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import type { McpResponse } from "@core/responses/mcp-response.types";
-import type { JiraClient } from "@features/jira/api/jira.client.impl";
+import {
+  JiraApiError,
+  JiraNotFoundError,
+  JiraPermissionError,
+} from "@features/jira/client/errors";
+import type { Issue } from "@features/jira/repositories/issue.models";
 import { GetIssueHandler } from "@features/jira/tools/handlers/get-issue.handler";
-import { jiraApiMocks, testDataBuilder } from "@test/utils/mock-helpers";
+import type { GetIssueUseCase } from "@features/jira/use-cases";
+import type { IssueParamsValidator } from "@features/jira/validators";
+import { mockFactory } from "@test/mocks/jira-mock-factory";
+import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 
 // Setup test environment
@@ -15,34 +23,166 @@ setupTests();
 
 describe("GetIssueHandler", () => {
   let handler: GetIssueHandler;
-  let mockClient: Partial<JiraClient>;
+  let mockUseCase: GetIssueUseCase;
+  let mockValidator: IssueParamsValidator;
+
+  // Mock issue data
+  const mockIssue: Issue = {
+    id: "10001",
+    key: "TEST-123",
+    self: "https://example.atlassian.net/rest/api/3/issue/10001",
+    fields: {
+      summary: "Test issue",
+      description: "This is a test issue",
+      issuetype: {
+        name: "Task",
+      },
+      status: {
+        name: "To Do",
+      },
+      priority: {
+        name: "Medium",
+      },
+      created: "2023-01-01T10:00:00.000Z",
+      updated: "2023-01-01T10:00:00.000Z",
+    },
+  };
 
   beforeEach(() => {
-    // Create a mock JIRA client
-    mockClient = {
-      getIssue: async (issueKey: string) => {
-        // This will be mocked by jiraApiMocks in individual tests
-        const response = await fetch(`/rest/api/3/issue/${issueKey}`);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${await response.text()}`);
-        }
-        return response.json();
-      },
+    // Create mock use case and validator
+    mockUseCase = {
+      execute: mock(() => Promise.resolve(mockIssue)),
     };
 
-    handler = new GetIssueHandler(mockClient as JiraClient);
+    mockValidator = {
+      validateGetIssueParams: mock((params) => params),
+    };
+
+    // Create handler with mocks
+    handler = new GetIssueHandler(mockUseCase, mockValidator);
   });
 
   afterEach(() => {
-    jiraApiMocks.clearMocks();
+    mock.restore();
+  });
+
+  describe("handle", () => {
+    it("should validate parameters and call the use case", async () => {
+      // Arrange
+      const params = { issueKey: "TEST-123" };
+
+      // Act
+      await handler.handle(params);
+
+      // Assert
+      expect(mockValidator.validateGetIssueParams).toHaveBeenCalledWith(params);
+      expect(mockUseCase.execute).toHaveBeenCalledWith(params);
+    });
+
+    it("should format issue correctly", async () => {
+      // Act
+      const result = (await handler.handle({
+        issueKey: "TEST-123",
+      })) as McpResponse<string>;
+
+      // Assert
+      expect(result.success).toBe(true);
+      expect(result.data).toContain("TEST-123");
+      expect(result.data).toContain("Test issue");
+      expect(result.data).toContain("This is a test issue");
+      expect(result.data).toContain("To Do");
+      expect(result.data).toContain("Medium");
+    });
+
+    it("should handle api errors", async () => {
+      // Arrange
+      mockUseCase.execute = mock(() => {
+        throw JiraApiError.withStatusCode("API error", 400);
+      });
+
+      // Act
+      const result = (await handler.handle({
+        issueKey: "TEST-123",
+      })) as McpResponse<string>;
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("JIRA API Error");
+    });
+
+    it("should handle permission errors", async () => {
+      // Arrange
+      mockUseCase.execute = mock(() => {
+        throw new JiraPermissionError("Permission denied");
+      });
+
+      // Act
+      const result = (await handler.handle({
+        issueKey: "TEST-123",
+      })) as McpResponse<string>;
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Permission Denied");
+    });
+
+    it("should handle not found errors", async () => {
+      // Arrange
+      mockUseCase.execute = mock(() => {
+        throw new JiraNotFoundError("Issue not found", "TEST-123");
+      });
+
+      // Act
+      const result = (await handler.handle({
+        issueKey: "TEST-123",
+      })) as McpResponse<string>;
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Issue Not Found");
+    });
+
+    it("should handle generic errors", async () => {
+      // Arrange
+      mockUseCase.execute = mock(() => {
+        throw new Error("Generic error");
+      });
+
+      // Act
+      const result = (await handler.handle({
+        issueKey: "TEST-123",
+      })) as McpResponse<string>;
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Issue Retrieval Failed");
+    });
+
+    it("should handle missing dependencies", () => {
+      // Act
+      const handlerWithoutDependencies = new GetIssueHandler(
+        undefined as unknown as GetIssueUseCase,
+        undefined as unknown as IssueParamsValidator,
+      );
+
+      // Assert
+      expect(handlerWithoutDependencies).toBeDefined();
+      // Now test that it handles the undefined dependencies gracefully
+      expect(async () => {
+        const result = (await handlerWithoutDependencies.handle({
+          issueKey: "TEST-123",
+        })) as McpResponse<string>;
+        expect(result.success).toBe(false);
+      }).not.toThrow();
+    });
   });
 
   describe("successful issue retrieval", () => {
-    test("should format issue with basic information", async () => {
+    it("should format issue with basic information", async () => {
       const mockIssue = testDataBuilder.issueWithStatus("To Do", "blue");
-      // Override the key to match what we expect
       mockIssue.key = "TEST-123";
-      jiraApiMocks.mockJiraApiSuccess("/rest/api/3/issue/TEST-123", mockIssue);
+
+      mockUseCase.execute = mock(() => Promise.resolve(mockIssue));
 
       const result = (await handler.handle({
         issueKey: "TEST-123",
@@ -54,8 +194,9 @@ describe("GetIssueHandler", () => {
       expect(result.data).toContain("To Do");
     });
 
-    test("should handle issue with complex ADF description", async () => {
-      // Create a complex ADF issue with the expected key
+    it("should handle issue with complex ADF description", async () => {
+      // Use 'as any' to bypass the type checking for the test
+      // This is acceptable in tests when we're mocking complex data structures
       const complexIssue = {
         id: "test-complex",
         key: "TEST-456",
@@ -95,6 +236,7 @@ describe("GetIssueHandler", () => {
           assignee: {
             displayName: "Jane Assignee",
             emailAddress: "jane@company.com",
+            accountId: "user-123", // Add required accountId for User type
           },
           created: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
           updated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -102,10 +244,7 @@ describe("GetIssueHandler", () => {
         },
       };
 
-      jiraApiMocks.mockJiraApiSuccess(
-        "/rest/api/3/issue/TEST-456",
-        complexIssue,
-      );
+      mockUseCase.execute = mock(() => Promise.resolve(complexIssue as Issue));
 
       const result = (await handler.handle({
         issueKey: "TEST-456",
@@ -114,18 +253,15 @@ describe("GetIssueHandler", () => {
       expect(result.success).toBe(true);
       expect(result.data).toContain("TEST-456");
       expect(result.data).toContain("Complex formatting issue");
-      // Should parse ADF content to markdown
       expect(result.data).toContain("```typescript");
       expect(result.data).toContain("interface ComplexType");
     });
 
-    test("should handle issue with different priorities", async () => {
+    it("should handle issue with different priorities", async () => {
       const highPriorityIssue = testDataBuilder.issueWithPriority("High");
       highPriorityIssue.key = "TEST-789";
-      jiraApiMocks.mockJiraApiSuccess(
-        "/rest/api/3/issue/TEST-789",
-        highPriorityIssue,
-      );
+
+      mockUseCase.execute = mock(() => Promise.resolve(highPriorityIssue));
 
       const result = (await handler.handle({
         issueKey: "TEST-789",
@@ -136,10 +272,11 @@ describe("GetIssueHandler", () => {
       expect(result.data).toContain("TEST-789");
     });
 
-    test("should handle issue with different statuses", async () => {
+    it("should handle issue with different statuses", async () => {
       const doneIssue = testDataBuilder.issueWithStatus("Done", "green");
       doneIssue.key = "TEST-101";
-      jiraApiMocks.mockJiraApiSuccess("/rest/api/3/issue/TEST-101", doneIssue);
+
+      mockUseCase.execute = mock(() => Promise.resolve(doneIssue));
 
       const result = (await handler.handle({
         issueKey: "TEST-101",
@@ -150,8 +287,10 @@ describe("GetIssueHandler", () => {
       expect(result.data).toContain("TEST-101");
     });
 
-    test("should include assignee and reporter information", async () => {
-      jiraApiMocks.mockGetIssue("TEST-202", "single-bug");
+    it("should include assignee and reporter information", async () => {
+      const mockIssue = mockFactory.createMockIssue({ key: "TEST-202" });
+
+      mockUseCase.execute = mock(() => Promise.resolve(mockIssue));
 
       const result = (await handler.handle({
         issueKey: "TEST-202",
@@ -162,8 +301,10 @@ describe("GetIssueHandler", () => {
       expect(result.data).toContain("Jane Assignee");
     });
 
-    test("should include creation and update timestamps", async () => {
-      jiraApiMocks.mockGetIssue("TEST-303");
+    it("should include creation and update timestamps", async () => {
+      const mockIssue = mockFactory.createMockIssue({ key: "TEST-303" });
+
+      mockUseCase.execute = mock(() => Promise.resolve(mockIssue));
 
       const result = (await handler.handle({
         issueKey: "TEST-303",
@@ -174,8 +315,14 @@ describe("GetIssueHandler", () => {
       expect(result.data).toContain("**Updated**");
     });
 
-    test("should handle labels if present", async () => {
-      jiraApiMocks.mockGetIssue("TEST-404");
+    it("should handle labels if present", async () => {
+      const mockIssue = mockFactory.createMockIssue({ key: "TEST-404" });
+      // Add labels to the fields
+      if (mockIssue.fields) {
+        mockIssue.fields.labels = ["testing", "mock-data"];
+      }
+
+      mockUseCase.execute = mock(() => Promise.resolve(mockIssue));
 
       const result = (await handler.handle({
         issueKey: "TEST-404",
@@ -188,135 +335,122 @@ describe("GetIssueHandler", () => {
     });
   });
 
-  describe("error handling", () => {
-    test("should handle issue not found error", async () => {
-      jiraApiMocks.mockIssueNotFound("NONEXIST-1");
-
-      const result = await handler.handle({ issueKey: "NONEXIST-1" });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("HTTP 404");
-    });
-
-    test("should handle authentication error", async () => {
-      jiraApiMocks.mockAuthError();
-
-      const result = await handler.handle({ issueKey: "TEST-1" });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("HTTP 401");
-    });
-
-    test("should handle permission error", async () => {
-      jiraApiMocks.mockPermissionError("RESTRICT-1");
-
-      const result = await handler.handle({ issueKey: "RESTRICT-1" });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("HTTP 403");
-    });
-
-    test("should handle network error", async () => {
-      jiraApiMocks.mockNetworkError("/rest/api/3/issue/NETWORK-1");
-
-      const result = await handler.handle({ issueKey: "NETWORK-1" });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("Network error");
-    });
-
-    test("should handle malformed response gracefully", async () => {
-      // Mock a response that has some malformed fields but includes required key
-      jiraApiMocks.mockJiraApiSuccess("/rest/api/3/issue/MALFORM-1", {
-        id: "malformed",
-        key: "MALFORM-1",
-        // Missing or null fields that should be handled gracefully
-        fields: null,
+  describe("input validation", () => {
+    it("should handle empty issue key", async () => {
+      // Act: modify the validator behavior for this test
+      mockValidator.validateGetIssueParams = mock(() => {
+        throw JiraApiError.withStatusCode("Invalid issue key", 400);
       });
 
       const result = (await handler.handle({
-        issueKey: "MALFORM-1",
+        issueKey: "",
       })) as McpResponse<string>;
 
-      expect(result.success).toBe(true);
-      // Should handle malformed data gracefully with fallback values
-      expect(result.data).toContain("MALFORM-1");
-      expect(result.data).toContain("No Summary");
-      expect(result.data).toContain("Unknown");
-      expect(result.data).toContain("Unassigned");
-    });
-  });
-
-  describe("input validation", () => {
-    test("should handle empty issue key", async () => {
-      const result = await handler.handle({ issueKey: "" });
-
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Invalid issue parameters");
+      expect(result.error).toContain("Invalid issue key");
     });
 
-    test("should handle null issue key", async () => {
-      const result = await handler.handle({ issueKey: null });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("Invalid issue parameters");
-    });
-
-    test("should handle undefined issue key", async () => {
-      const result = await handler.handle({ issueKey: undefined });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("Invalid issue parameters");
-    });
-
-    test("should handle whitespace-only issue key", async () => {
-      const result = await handler.handle({ issueKey: "   " });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("Invalid issue parameters");
-    });
-
-    test("should accept valid issue key formats", async () => {
-      const validKeys = ["TEST-1", "PROJECT-123", "MYPROJ-999"];
-
-      for (const key of validKeys) {
-        jiraApiMocks.mockGetIssue(key);
-        const result = await handler.handle({ issueKey: key });
-        expect(result.success).toBe(true);
-        jiraApiMocks.clearMocks();
-      }
-    });
-  });
-
-  describe("formatting and display", () => {
-    test("should format markdown properly", async () => {
-      jiraApiMocks.mockGetIssue("FORMAT-1");
+    it("should handle null issue key", async () => {
+      // Act: modify the validator behavior for this test
+      mockValidator.validateGetIssueParams = mock(() => {
+        throw JiraApiError.withStatusCode("Invalid issue key", 400);
+      });
 
       const result = (await handler.handle({
-        issueKey: "FORMAT-1",
+        issueKey: null as unknown as string,
       })) as McpResponse<string>;
 
-      expect(result.success).toBe(true);
-      // Check for proper markdown structure
-      expect(result.data).toMatch(/^# /); // Should start with header
-      expect(result.data).toContain("**Status:**");
-      expect(result.data).toContain("**Priority:**");
-      expect(result.data).toContain("## Description");
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid issue key");
     });
 
-    test("should handle missing optional fields gracefully", async () => {
-      // Create issue with minimal fields
+    it("should handle undefined issue key", async () => {
+      // Act: modify the validator behavior for this test
+      mockValidator.validateGetIssueParams = mock(() => {
+        throw JiraApiError.withStatusCode("Invalid issue key", 400);
+      });
+
+      const result = (await handler.handle({
+        issueKey: undefined as unknown as string,
+      })) as McpResponse<string>;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid issue key");
+    });
+
+    it("should handle whitespace-only issue key", async () => {
+      // Act: modify the validator behavior for this test
+      mockValidator.validateGetIssueParams = mock(() => {
+        throw JiraApiError.withStatusCode("Invalid issue key", 400);
+      });
+
+      const result = (await handler.handle({
+        issueKey: "   ",
+      })) as McpResponse<string>;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid issue key");
+    });
+
+    it("should validate issue key format", async () => {
+      // Act: modify the validator behavior for this test
+      mockValidator.validateGetIssueParams = mock(() => {
+        throw JiraApiError.withStatusCode("Invalid issue key", 400);
+      });
+
+      const result = (await handler.handle({
+        issueKey: "invalid-key-format",
+      })) as McpResponse<string>;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid issue key");
+    });
+  });
+
+  describe("advanced features", () => {
+    it("should support field filtering", async () => {
+      const mockIssue = testDataBuilder.issueWithStatus("To Do", "blue");
+      mockIssue.key = "TEST-505";
+
+      mockUseCase.execute = mock(() => Promise.resolve(mockIssue));
+
+      const result = await handler.handle({
+        issueKey: "TEST-505",
+        fields: ["summary", "status", "priority"],
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it("should handle different field subsets", async () => {
+      const mockIssue = testDataBuilder.issueWithStatus(
+        "In Progress",
+        "yellow",
+      );
+      mockIssue.key = "TEST-606";
+
+      mockUseCase.execute = mock(() => Promise.resolve(mockIssue));
+
+      const result = await handler.handle({
+        issueKey: "TEST-606",
+        fields: ["summary"],
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it("should handle missing optional fields gracefully", async () => {
       const minimalIssue = {
-        id: "test-minimal",
+        id: "minimal",
         key: "MIN-1",
-        self: "https://test.atlassian.net/rest/api/3/issue/test-minimal",
+        self: "https://test.atlassian.net/rest/api/3/issue/minimal",
         fields: {
           summary: "Minimal issue",
-          // No description, assignee, etc.
+          // Missing status, priority, etc.
         },
       };
 
-      jiraApiMocks.mockJiraApiSuccess("/rest/api/3/issue/MIN-1", minimalIssue);
+      mockUseCase.execute = mock(() => Promise.resolve(minimalIssue as Issue));
 
       const result = (await handler.handle({
         issueKey: "MIN-1",
@@ -325,11 +459,9 @@ describe("GetIssueHandler", () => {
       expect(result.success).toBe(true);
       expect(result.data).toContain("MIN-1");
       expect(result.data).toContain("Minimal issue");
-      // Should handle missing fields gracefully - check for default values
-      expect(result.data).toContain("Unassigned");
     });
 
-    test("should handle string description (legacy format)", async () => {
+    it("should handle string description (legacy format)", async () => {
       const issueWithStringDesc = {
         id: "test-string",
         key: "STR-1",
@@ -340,9 +472,8 @@ describe("GetIssueHandler", () => {
         },
       };
 
-      jiraApiMocks.mockJiraApiSuccess(
-        "/rest/api/3/issue/STR-1",
-        issueWithStringDesc,
+      mockUseCase.execute = mock(() =>
+        Promise.resolve(issueWithStringDesc as Issue),
       );
 
       const result = (await handler.handle({

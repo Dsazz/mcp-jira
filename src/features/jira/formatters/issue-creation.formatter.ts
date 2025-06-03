@@ -4,7 +4,7 @@
  * Formats responses for successful issue creation with professional output,
  * direct links, and next action guidance
  */
-import type { Issue } from "@features/jira/api/jira.models.types";
+import type { Issue } from "@features/jira/repositories/issue.models";
 
 /**
  * Formatter for issue creation responses

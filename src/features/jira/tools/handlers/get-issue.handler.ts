@@ -4,92 +4,114 @@
  * MCP tool handler for retrieving JIRA issue details
  */
 import { BaseToolHandler } from "@core/tools/tool-handler.class";
-import { formatZodError } from "@core/utils/validation";
-import { issueKeySchema } from "@features/jira/api";
-import type { JiraClient } from "@features/jira/api/jira.client.impl";
+import {
+  JiraApiError,
+  JiraNotFoundError,
+  JiraPermissionError,
+} from "@features/jira/client/errors";
 import { IssueFormatter } from "@features/jira/formatters/issue.formatter";
-import { z } from "zod";
+import type { GetIssueUseCase } from "@features/jira/use-cases";
+import type {
+  GetIssueParams,
+  IssueParamsValidator,
+} from "@features/jira/validators";
 
 /**
- * Parameters for getting a JIRA issue
+ * Handler for retrieving and formatting JIRA issue details
  */
-const getIssueParamsSchema = z.object({
-  issueKey: issueKeySchema,
-});
-
-/**
- * Interface for the parameters required by GetIssueHandler
- */
-export type GetIssueParams = z.infer<typeof getIssueParamsSchema>;
-
-// List of fields to retrieve for each issue
-const ISSUE_FIELDS = [
-  "summary",
-  "description",
-  "status",
-  "priority",
-  "assignee",
-  "reporter",
-  "created",
-  "updated",
-  "labels",
-];
-
-/**
- * Handler for retrieving and formatting a specific JIRA issue
- */
-export class GetIssueHandler extends BaseToolHandler<
-  z.infer<typeof getIssueParamsSchema>,
-  string
-> {
+export class GetIssueHandler extends BaseToolHandler<GetIssueParams, string> {
   private formatter: IssueFormatter;
 
   /**
-   * Create a new GetIssueHandler with client
+   * Create a new GetIssueHandler with use case and validator
    *
-   * @param client - JIRA API client to use for requests
+   * @param getIssueUseCase - Use case for retrieving issue details
+   * @param issueParamsValidator - Validator for issue parameters
    */
-  constructor(private readonly client?: JiraClient) {
+  constructor(
+    private readonly getIssueUseCase: GetIssueUseCase,
+    private readonly issueParamsValidator: IssueParamsValidator,
+  ) {
     super("JIRA", "Get Issue");
     this.formatter = new IssueFormatter();
   }
 
   /**
    * Execute the handler logic
-   * Retrieves a JIRA issue by key and formats it using the formatter
+   * Retrieves issue details and formats them using the formatter
    *
-   * @param params - Parameters with the JIRA issue key
+   * @param params - Parameters for issue retrieval
    */
-  protected async execute(
-    params: z.infer<typeof getIssueParamsSchema>,
-  ): Promise<string> {
+  protected async execute(params: GetIssueParams): Promise<string> {
     try {
-      // Validate parameters
-      const result = getIssueParamsSchema.safeParse(params);
-      if (!result.success) {
-        const errorMessage = `Invalid issue parameters: ${formatZodError(
-          result.error,
-        )}`;
-        throw new Error(errorMessage);
-      }
+      // Step 1: Validate parameters
+      const validatedParams =
+        this.issueParamsValidator.validateGetIssueParams(params);
+      this.logger.info(`Getting JIRA issue: ${validatedParams.issueKey}`);
 
-      const { issueKey } = result.data;
+      // Step 2: Get issue using use case
+      const issue = await this.getIssueUseCase.execute(validatedParams);
 
-      this.logger.info(`Getting JIRA issue: ${issueKey}`);
-
-      // Ensure client is available
-      if (!this.client) {
-        throw new Error("JIRA client not initialized");
-      }
-
-      // Get the issue with all necessary fields
-      const issue = await this.client.getIssue(issueKey, ISSUE_FIELDS);
-
-      // Format the issue using the formatter
+      // Step 3: Format issue using the formatter
       return this.formatter.format(issue);
     } catch (error) {
       this.logger.error(`Failed to get issue: ${error}`);
-      throw error;
+      throw this.enhanceError(error, params);
     }
+  }
+
+  /**
+   * Enhance error messages for better user guidance
+   */
+  private enhanceError(error: unknown, params?: GetIssueParams): Error {
+    const issueContext = params?.issueKey
+      ? ` for issue ${params.issueKey}`
+      : "";
+
+    if (error instanceof JiraNotFoundError) {
+      return new Error(
+        `❌ **Issue Not Found**\n\nNo issue found${issueContext}.\n\n**Solutions:**\n- Verify the issue key is correct\n- Check if the issue exists\n- Verify you have permission to view the issue\n\n**Example:** \`jira_get_issue issueKey="PROJ-123"\``,
+      );
+    }
+
+    if (error instanceof JiraPermissionError) {
+      return new Error(
+        `❌ **Permission Denied**\n\nYou don't have permission to view the issue${issueContext}.\n\n**Solutions:**\n- Check your JIRA permissions\n- Contact your JIRA administrator\n- Verify you have access to the project\n\n**Required Permissions:** Browse Projects`,
+      );
+    }
+
+    if (error instanceof JiraApiError) {
+      return new Error(
+        `❌ **JIRA API Error**\n\n${error.message}\n\n**Solutions:**\n- Verify the issue key is valid (format: PROJ-123)\n- Check your JIRA connection\n- Try with a different issue\n\n**Example:** \`jira_get_issue issueKey="PROJ-123"\``,
+      );
+    }
+
+    if (error instanceof Error) {
+      return new Error(
+        `❌ **Issue Retrieval Failed**\n\n${error.message}${issueContext}\n\n**Solutions:**\n- Check your parameters are valid\n- Verify your JIRA connection\n- Try with a different issue\n\n**Example:** \`jira_get_issue issueKey="PROJ-123"\``,
+      );
+    }
+
+    return new Error(
+      `❌ **Unknown Error**\n\nAn unknown error occurred during issue retrieval${issueContext}.\n\nPlease check your parameters and try again.`,
+    );
+  }
+
+  /**
+   * Get the schema for this handler
+   * TODO: We have to specify the schema for the handler
+   */
+  static getSchema() {
+    return {
+      type: "object",
+      properties: {
+        issueKey: { type: "string" },
+        fields: {
+          type: "array",
+          items: { type: "string" },
+        },
+      },
+      required: ["issueKey"],
+    };
   }
 }

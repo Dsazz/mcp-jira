@@ -4,12 +4,12 @@
  */
 
 import { beforeEach, describe, expect, test } from "bun:test";
-import type { Comment } from "@features/jira/api/jira.models.types";
 import {
   type CommentsContext,
   CommentsFormatter,
 } from "@features/jira/formatters/comments.formatter";
-import type { ADFDocument } from "@features/jira/parsers/adf-parser";
+import type { ADFDocument } from "@features/jira/parsers/adf.parser";
+import type { Comment } from "@features/jira/repositories/comment.models";
 import { setupTests } from "@test/utils/test-setup";
 
 // Setup test environment

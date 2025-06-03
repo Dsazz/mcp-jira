@@ -1,8 +1,8 @@
+import { parseADF } from "@features/jira/parsers/adf.parser";
 /**
  * Formatter for single JIRA issue to markdown
  */
-import type { Issue } from "@features/jira/api/";
-import { parseADF } from "@features/jira/parsers/adf-parser";
+import type { Issue } from "@features/jira/repositories/issue.models";
 import type { Formatter } from "./formatter.interface";
 
 /**

@@ -1,11 +1,11 @@
-import type { SearchJiraIssuesParams } from "@features/jira/api";
+import { parseADF } from "@features/jira/parsers/adf.parser";
 /**
  * Formatter for JIRA issues list to markdown
  *
  * Formats search results as rich markdown cards with description previews
  */
-import type { Issue } from "@features/jira/api/";
-import { parseADF } from "@features/jira/parsers/adf-parser";
+import type { Issue } from "@features/jira/repositories/issue.models";
+import type { SearchJiraIssuesParams } from "@features/jira/use-cases";
 import type { Formatter } from "./formatter.interface";
 
 /**
@@ -33,7 +33,7 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
       return this.formatEmptyResults(metadata);
     }
 
-    let markdown = this.formatHeader(metadata);
+    let markdown = this.formatHeader(metadata, issues);
 
     // Add individual issue cards
     for (const issue of issues) {
@@ -49,27 +49,34 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
   /**
    * Format header with search information
    */
-  private formatHeader(metadata?: SearchResultMetadata): string {
-    if (!metadata) {
-      return "# JIRA Search Results\n\n";
-    }
-
+  private formatHeader(
+    metadata?: SearchResultMetadata,
+    issues?: Issue[],
+  ): string {
+    // Start with the basic header
     let header = "# JIRA Search Results\n\n";
 
-    // Show query information
-    if (metadata.searchParams.jql) {
-      header += `**JQL Query**: \`${metadata.searchParams.jql}\`\n`;
-    } else {
-      header += "**Query**: Helper parameters\n";
-      const helpers = this.formatHelperSummary(metadata.searchParams);
-      if (helpers) {
-        header += `**Filters**: ${helpers}\n`;
+    if (metadata) {
+      // Show query information from metadata
+      if (metadata.searchParams.jql) {
+        header += `**JQL Query**: \`${metadata.searchParams.jql}\`\n`;
+      } else {
+        header += "**Query**: Helper parameters\n";
+        const helpers = this.formatHelperSummary(metadata.searchParams);
+        if (helpers) {
+          header += `**Filters**: ${helpers}\n`;
+        }
       }
+
+      // Show results count from metadata
+      header += `**Results**: ${metadata.totalResults} ${metadata.totalResults === metadata.maxResults ? `(max ${metadata.maxResults})` : ""}\n\n`;
+    } else if (issues) {
+      // When no metadata but we have issues, show the count from the array length
+      const count = issues.length;
+      header += `**Found**: ${count} issue${count !== 1 ? "s" : ""}\n\n`;
     }
 
-    header += `**Results**: ${metadata.totalResults} ${metadata.totalResults === metadata.maxResults ? `(max ${metadata.maxResults})` : ""}\n\n`;
     header += "---\n\n";
-
     return header;
   }
 
@@ -243,6 +250,8 @@ export class IssuesListFormatter implements Formatter<Issue[]> {
       }
     }
 
+    message += "**Found**: 0 issues\n\n";
+    message += "---\n\n";
     message += "📭 **No issues found matching your search criteria.**\n\n";
     message += "Try adjusting your search parameters or JQL query.\n";
 

@@ -3,25 +3,28 @@
  *
  * Handles updating existing JIRA issues with comprehensive validation,
  * status transitions, array operations, and professional error handling
+ * Refactored to use the use-case pattern for better separation of concerns
  */
 import { BaseToolHandler } from "@core/tools";
 import { formatZodError } from "@core/utils/validation";
-import type { JiraClient } from "@features/jira/api/jira.client.impl";
 import {
   JiraApiError,
   JiraNotFoundError,
   JiraPermissionError,
-} from "@features/jira/api/jira.errors";
+} from "@features/jira/client/errors";
+import { IssueUpdateFormatter } from "@features/jira/formatters/issue-update.formatter";
+import { IssueUpdateParamsValidationError } from "@features/jira/validators/errors";
 import {
   type UpdateIssueParams,
-  transformToUpdateRequest,
+  type UpdateIssueUseCase,
+  type UpdateIssueUseCaseRequest,
   updateIssueParamsSchema,
-} from "@features/jira/api/jira.schemas";
-import { IssueUpdateFormatter } from "../../formatters/issue-update.formatter";
+} from "@features/jira/use-cases";
 
 /**
  * Handler for updating existing JIRA issues
  * Provides comprehensive issue updates with validation, transitions, and rich responses
+ * Uses the use-case pattern for separation of concerns
  */
 export class UpdateIssueHandler extends BaseToolHandler<
   UpdateIssueParams,
@@ -30,11 +33,11 @@ export class UpdateIssueHandler extends BaseToolHandler<
   private readonly formatter: IssueUpdateFormatter;
 
   /**
-   * Create a new UpdateIssueHandler with client
+   * Create a new UpdateIssueHandler with necessary dependencies
    *
-   * @param client - JIRA API client to use for requests
+   * @param updateIssueUseCase - Use case for updating issues with validation
    */
-  constructor(private readonly client?: JiraClient) {
+  constructor(private readonly updateIssueUseCase: UpdateIssueUseCase) {
     super("JIRA", "Update Issue");
     this.formatter = new IssueUpdateFormatter();
   }
@@ -42,6 +45,7 @@ export class UpdateIssueHandler extends BaseToolHandler<
   /**
    * Execute the handler logic
    * Updates an existing JIRA issue with comprehensive validation and formatting
+   * Delegates business logic to the use case
    *
    * @param params - Parameters for issue update
    */
@@ -51,56 +55,27 @@ export class UpdateIssueHandler extends BaseToolHandler<
       const validatedParams = this.validateParameters(params);
       this.logger.info(`Updating JIRA issue: ${validatedParams.issueKey}`);
 
-      // Step 2: Ensure client is available
-      if (!this.client) {
-        throw new Error("JIRA client not initialized");
-      }
+      // Step 2: Map parameters to use case request
+      const useCaseRequest: UpdateIssueUseCaseRequest =
+        this.mapToUseCaseRequest(validatedParams);
 
-      // Step 3: Handle status transition if specified
-      let transitionId: string | undefined;
-      if (validatedParams.status) {
-        transitionId = await this.resolveStatusTransition(
-          validatedParams.issueKey,
-          validatedParams.status,
-        );
-      }
-
-      // Step 4: Transform parameters to API request
-      const updateRequest = transformToUpdateRequest(validatedParams);
-
-      // Step 5: Add transition if resolved
-      if (transitionId) {
-        updateRequest.transition = { id: transitionId };
-      }
-
-      // Step 6: Update the issue
-      this.logger.debug("Updating issue with data:", {
+      // Step 3: Execute the use case
+      this.logger.debug("Delegating to UpdateIssueUseCase", {
         issueKey: validatedParams.issueKey,
-        hasFields: !!updateRequest.fields,
-        hasUpdates: !!updateRequest.update,
-        hasTransition: !!updateRequest.transition,
+        hasTransition: !!validatedParams.transition,
+        hasFieldUpdates: Object.keys(useCaseRequest.fields || {}).length > 0,
       });
 
-      const updatedIssue = await this.client.updateIssue(
-        validatedParams.issueKey,
-        updateRequest,
-      );
+      const updatedIssue =
+        await this.updateIssueUseCase.execute(useCaseRequest);
 
-      // Step 7: Handle worklog if specified
-      if (validatedParams.worklog) {
-        await this.addWorklogEntry(
-          validatedParams.issueKey,
-          validatedParams.worklog,
-        );
-      }
-
-      // Step 8: Format and return success response
+      // Step 4: Format and return success response
       this.logger.info(`Successfully updated issue: ${updatedIssue.key}`);
       return this.formatter.format(updatedIssue, {
-        hasTransition: !!transitionId,
-        hasWorklog: !!validatedParams.worklog,
-        fieldsUpdated: Object.keys(updateRequest.fields || {}),
-        arraysUpdated: Object.keys(updateRequest.update || {}),
+        hasTransition: !!validatedParams.transition,
+        hasWorklog: false,
+        fieldsUpdated: Object.keys(useCaseRequest.fields || {}),
+        arraysUpdated: [],
       });
     } catch (error) {
       this.logger.error(`Failed to update JIRA issue: ${error}`);
@@ -118,87 +93,65 @@ export class UpdateIssueHandler extends BaseToolHandler<
       const errorMessage = `Invalid issue update parameters: ${formatZodError(
         result.error,
       )}`;
-      throw new JiraApiError(errorMessage, 400);
+      throw new IssueUpdateParamsValidationError(errorMessage);
     }
 
     return result.data;
   }
 
   /**
-   * Resolve status name to transition ID
+   * Map handler parameters to use case request
+   * TODO: We have to specify a special mapper for this
    */
-  private async resolveStatusTransition(
-    issueKey: string,
-    targetStatus: string,
-  ): Promise<string> {
-    if (!this.client) {
-      throw new Error("JIRA client not initialized");
+  private mapToUseCaseRequest(
+    params: UpdateIssueParams,
+  ): UpdateIssueUseCaseRequest {
+    const useCaseRequest: UpdateIssueUseCaseRequest = {
+      issueKey: params.issueKey,
+      notifyUsers: params.notifyUsers,
+    };
+
+    // Map fields
+    if (
+      params.summary ||
+      params.description ||
+      params.priority ||
+      params.assignee
+    ) {
+      useCaseRequest.fields = {};
+      if (params.summary) useCaseRequest.fields.summary = params.summary;
+      if (params.description)
+        useCaseRequest.fields.description = params.description;
+      if (params.priority)
+        useCaseRequest.fields.priority = { name: params.priority };
+      if (params.assignee)
+        useCaseRequest.fields.assignee = { accountId: params.assignee };
     }
 
-    this.logger.debug(`Resolving transition for status: ${targetStatus}`);
+    // Map transition
+    if (params.transition) {
+      useCaseRequest.transition = {
+        id: params.transition.id,
+        fields: params.transition.fields,
+      };
+    }
 
-    try {
-      const transitions = await this.client.getIssueTransitions(issueKey);
+    // Map labels and components (handled directly for simplicity)
+    if (params.labels || params.components) {
+      useCaseRequest.fields = useCaseRequest.fields || {};
 
-      // Find transition that leads to the target status
-      const matchingTransition = transitions.find(
-        (transition) =>
-          transition.to.name.toLowerCase() === targetStatus.toLowerCase() ||
-          transition.name.toLowerCase() === targetStatus.toLowerCase(),
-      );
+      if (params.labels && params.labels.operation === "set") {
+        useCaseRequest.fields.labels = params.labels.values;
+      }
 
-      if (!matchingTransition) {
-        const availableStatuses = transitions.map((t) => t.to.name).join(", ");
-        throw new JiraApiError(
-          `Status '${targetStatus}' is not available for issue ${issueKey}. Available transitions: ${availableStatuses}`,
-          400,
+      if (params.components && params.components.operation === "set") {
+        useCaseRequest.fields.components = params.components.values.map(
+          (name) => ({ name }),
         );
       }
-
-      this.logger.debug(
-        `Found transition: ${matchingTransition.name} (${matchingTransition.id})`,
-      );
-      return matchingTransition.id;
-    } catch (error) {
-      if (error instanceof JiraApiError) {
-        throw error;
-      }
-      throw new JiraApiError(
-        `Failed to resolve status transition for '${targetStatus}': ${error}`,
-        500,
-      );
-    }
-  }
-
-  /**
-   * Add worklog entry to the issue
-   */
-  private async addWorklogEntry(
-    issueKey: string,
-    worklog: { timeSpent: string; comment?: string; started?: string },
-  ): Promise<void> {
-    if (!this.client) {
-      throw new Error("JIRA client not initialized");
     }
 
-    this.logger.debug(`Adding worklog to issue: ${issueKey}`);
-
-    try {
-      await this.client.addWorklog(
-        issueKey,
-        worklog.timeSpent,
-        worklog.comment,
-        worklog.started,
-      );
-      this.logger.debug(`Successfully added worklog: ${worklog.timeSpent}`);
-    } catch (error) {
-      this.logger.warn(`Failed to add worklog: ${error}`);
-      // Don't fail the entire update if worklog fails
-      throw new JiraApiError(
-        `Issue updated successfully, but failed to add worklog: ${error}`,
-        207, // Multi-status
-      );
-    }
+    return useCaseRequest;
   }
 
   /**
@@ -220,26 +173,19 @@ export class UpdateIssueHandler extends BaseToolHandler<
     }
 
     if (error instanceof JiraApiError) {
-      if (error.statusCode === 207) {
-        // Multi-status error (partial success)
-        return new Error(
-          `⚠️ **Partial Update Success**\n\n${error.message}\n\n**Note:** The main issue update was successful, but there was an issue with additional operations.`,
-        );
-      }
-
       return new Error(
-        `❌ **JIRA API Error**\n\n${error.message}\n\n**Solutions:**\n- Check your field values are valid for this issue type\n- Verify required fields are provided for transitions\n- Ensure array operations reference existing values\n- Check time format for worklog entries (e.g., '2h', '30m', '1d 4h')\n\n**Example:** \`jira_update_issue issueKey=PROJ-123 summary="New summary" priority=High\``,
+        `❌ **JIRA API Error**\n\n${error.message}\n\n**Solutions:**\n- Check your field values are valid for this issue type\n- Verify required fields are provided for transitions\n- Ensure array operations reference existing values\n\n**Example:** \`jira_update_issue issueKey=PROJ-123 summary="New summary" priority=High\``,
       );
     }
 
     if (error instanceof Error) {
       return new Error(
-        `❌ **Update Failed**\n\n${error.message}${issueContext}\n\n**Solutions:**\n- Check your parameters are valid\n- Verify the issue exists and you have permissions\n- Try updating fewer fields at once\n\n**Example:** \`jira_update_issue issueKey=PROJ-123 description="Updated description"\``,
+        `❌ **Update Failed**\n\n${error.message}\n\n**Solutions:**\n- Check your parameters are valid\n- Verify the issue exists and is accessible\n- Ensure you have the necessary permissions\n\n**Example:** \`jira_update_issue issueKey=PROJ-123 summary="Updated summary"\``,
       );
     }
 
     return new Error(
-      `❌ **Unknown Error**\n\nAn unknown error occurred during issue update${issueContext}.\n\nPlease check your parameters and try again.`,
+      "❌ **Unknown Error**\n\nAn unknown error occurred during issue update.\n\nPlease check your parameters and try again.",
     );
   }
 

@@ -1,14 +1,14 @@
 /**
- * Project List Formatter Unit Tests
- * Comprehensive unit tests for JIRA project list formatter
+ * Project List Formatter Tests
+ * Tests for the project list formatting functionality
  */
 
 import { beforeEach, describe, expect, test } from "bun:test";
-import type { Project } from "@features/jira/api/jira.client.types";
 import {
   type ProjectListContext,
   ProjectListFormatter,
 } from "@features/jira/formatters/project-list.formatter";
+import type { Project } from "@features/jira/repositories/project.types";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 
@@ -30,26 +30,28 @@ describe("ProjectListFormatter", () => {
           key: "TEST",
           name: "Test Project",
           projectTypeKey: "software",
-          description: "A comprehensive test project for development",
-          lead: {
-            accountId: "lead-123",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
+          lead: mockFactory.createMockUser({
+            accountId: "123",
             displayName: "John Lead",
-            emailAddress: "john.lead@company.com",
-          },
+          }),
           projectCategory: {
-            id: "10001",
+            id: "10000",
             name: "Development",
-            description: "Software development projects",
+            description: "Development projects",
           },
+          description: "A comprehensive test project for development",
           components: [
             { id: "10001", name: "Frontend" },
             { id: "10002", name: "Backend" },
             { id: "10003", name: "API" },
           ],
           versions: [
-            { id: "10001", name: "v1.0.0", released: true },
-            { id: "10002", name: "v1.1.0", released: false },
-            { id: "10003", name: "v2.0.0", released: false },
+            { id: "10001", name: "v1.0.0", released: true, archived: false },
+            { id: "10002", name: "v1.1.0", released: false, archived: false },
+            { id: "10003", name: "v2.0.0", released: false, archived: false },
           ],
           issueTypes: [
             { id: "10001", name: "Bug", subtask: false },
@@ -57,8 +59,6 @@ describe("ProjectListFormatter", () => {
             { id: "10003", name: "Task", subtask: false },
             { id: "10004", name: "Epic", subtask: false },
           ],
-          isPrivate: false,
-          simplified: false,
         },
         {
           id: "10002",
@@ -68,6 +68,7 @@ describe("ProjectListFormatter", () => {
           description: "Demo project for showcasing features",
           isPrivate: true,
           simplified: true,
+          style: "next-gen",
         },
       ];
 
@@ -81,27 +82,29 @@ describe("ProjectListFormatter", () => {
 
       const result = formatter.format(projects, context);
 
-      expect(result).toContain('📋 JIRA Projects - Search: "test"');
-      expect(result).toContain("Found 2 projects");
+      expect(result).toContain('# 📋 JIRA Projects - Search: "test"');
+      expect(result).toContain("**Found 2 projects**");
       expect(result).toContain("*(filtered)*");
       expect(result).toContain("*Ordered by: name*");
-      expect(result).toContain("1. **TEST** - Test Project");
+      expect(result).toContain("## 1. **TEST** - Test Project");
       expect(result).toContain("`software`");
-      expect(result).toContain("A comprehensive test project for development");
+      expect(result).toContain(
+        "*A comprehensive test project for development*",
+      );
       expect(result).toContain("**Lead:** John Lead");
       expect(result).toContain("**Category:** Development");
       expect(result).toContain("**Components:** 3 components");
       expect(result).toContain("**Versions:** 3 total (1 released)");
       expect(result).toContain("**Issue Types:** Bug, Story, Task (+1 more)");
-      expect(result).toContain("2. **DEMO** - Demo Project");
+      expect(result).toContain("## 2. **DEMO** - Demo Project");
       expect(result).toContain("`business`");
       expect(result).toContain("`🔒 Private`");
       expect(result).toContain("`⚡ Simplified`");
       expect(result).toContain("[View Project]");
       expect(result).toContain("[Browse Issues]");
       expect(result).toContain("[Project Settings]");
-      expect(result).toContain("🚀 Next Actions");
-      expect(result).toContain("💡 Tips");
+      expect(result).toContain("## 🚀 Next Actions");
+      expect(result).toContain("## 💡 Tips");
     });
 
     test("should handle empty project list", () => {
@@ -128,6 +131,9 @@ describe("ProjectListFormatter", () => {
           key: "MIN",
           name: "Minimal Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
         },
       ];
 
@@ -148,6 +154,9 @@ describe("ProjectListFormatter", () => {
           key: "PARTIAL",
           name: "Partial Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
           description: undefined,
           lead: undefined,
           projectCategory: undefined,
@@ -175,6 +184,9 @@ describe("ProjectListFormatter", () => {
           key: "EMPTY",
           name: "Empty Arrays Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
           components: [],
           versions: [],
           issueTypes: [],
@@ -196,8 +208,13 @@ describe("ProjectListFormatter", () => {
           key: "SINGLE",
           name: "Single Items Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
           components: [{ id: "10001", name: "Frontend" }],
-          versions: [{ id: "10001", name: "v1.0.0", released: true }],
+          versions: [
+            { id: "10001", name: "v1.0.0", released: true, archived: false },
+          ],
           issueTypes: [{ id: "10001", name: "Bug", subtask: false }],
         },
       ];
@@ -216,6 +233,9 @@ describe("ProjectListFormatter", () => {
           key: "MANY",
           name: "Many Issue Types Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
           issueTypes: [
             { id: "1", name: "Bug", subtask: false },
             { id: "2", name: "Story", subtask: false },
@@ -239,9 +259,12 @@ describe("ProjectListFormatter", () => {
           key: "UNRELEASED",
           name: "Unreleased Versions Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
           versions: [
-            { id: "10001", name: "v1.0.0", released: false },
-            { id: "10002", name: "v2.0.0", released: false },
+            { id: "10001", name: "v1.0.0", released: false, archived: false },
+            { id: "10002", name: "v2.0.0", released: false, archived: false },
           ],
         },
       ];
@@ -258,8 +281,9 @@ describe("ProjectListFormatter", () => {
           key: "BADGES",
           name: "All Badges Project",
           projectTypeKey: "business",
-          isPrivate: true,
           simplified: true,
+          style: "next-gen",
+          isPrivate: true,
         },
       ];
 
@@ -278,6 +302,9 @@ describe("ProjectListFormatter", () => {
           key: "LONG",
           name: "Long Description Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
           description: longDescription,
         },
       ];
@@ -382,6 +409,9 @@ describe("ProjectListFormatter", () => {
           key: "URL-TEST",
           name: "URL Test Project",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
         },
       ];
 
@@ -390,6 +420,113 @@ describe("ProjectListFormatter", () => {
       expect(result).toContain("[View Project](#jira-project-URL-TEST)");
       expect(result).toContain("[Browse Issues](#jira-issues-URL-TEST)");
       expect(result).toContain("[Project Settings](#jira-settings-URL-TEST)");
+    });
+
+    test("should handle projects with special characters in names", () => {
+      const projects: Project[] = [
+        {
+          id: "10001",
+          key: "SPECIAL",
+          name: "Special Chars: @#$%^&*()_+-=[]{}|;':\",./<>?",
+          projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
+        },
+      ];
+
+      const result = formatter.format(projects);
+
+      expect(result).toContain(
+        "**SPECIAL** - Special Chars: @#$%^&*()_+-=[]{}|;':\",./<>?",
+      );
+    });
+
+    test("should handle projects with very long names", () => {
+      const longName =
+        "This is a very long project name that might cause formatting issues if not handled properly in the display logic";
+
+      const projects: Project[] = [
+        {
+          id: "10001",
+          key: "LONG",
+          name: longName,
+          projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
+        },
+      ];
+
+      const result = formatter.format(projects);
+
+      expect(result).toContain(longName);
+    });
+
+    test("should handle missing project type", () => {
+      const projects: Project[] = [
+        {
+          id: "10001",
+          key: "NOTYPE",
+          name: "No Type Project",
+          projectTypeKey: "unknown",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
+        },
+      ];
+
+      const result = formatter.format(projects);
+
+      expect(result).toContain("1. **NOTYPE** - No Type Project");
+      expect(result).toContain("`unknown`");
+    });
+
+    test("should handle empty search query in context", () => {
+      const projects: Project[] = [];
+      const context: ProjectListContext = {
+        searchQuery: "",
+        filterApplied: false,
+      };
+
+      const result = formatter.format(projects, context);
+
+      expect(result).toContain("📋 No Projects Found");
+      expect(result).not.toContain('Search: ""');
+    });
+
+    test("should handle zero total count", () => {
+      const projects: Project[] = [];
+      const context: ProjectListContext = {
+        totalCount: 0,
+        hasMore: false,
+      };
+
+      const result = formatter.format(projects, context);
+
+      expect(result).toContain("📋 No Projects Found");
+    });
+
+    test("should handle large project counts", () => {
+      const projects: Project[] = Array.from({ length: 50 }, (_, i) => ({
+        id: `1000${i}`,
+        key: `PROJ${i}`,
+        name: `Project ${i}`,
+        projectTypeKey: "software",
+        simplified: false,
+        style: "classic",
+        isPrivate: false,
+      }));
+
+      const context: ProjectListContext = {
+        totalCount: 500,
+        hasMore: true,
+      };
+
+      const result = formatter.format(projects, context);
+
+      expect(result).toContain("Found 50 projects (showing 50 of 500)");
+      expect(result).toContain("📄 **More projects available**");
     });
   });
 
@@ -450,6 +587,9 @@ describe("ProjectListFormatter", () => {
           key: "SPECIAL",
           name: "Special Chars: @#$%^&*()_+-=[]{}|;':\",./<>?",
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
         },
       ];
 
@@ -470,6 +610,9 @@ describe("ProjectListFormatter", () => {
           key: "LONG",
           name: longName,
           projectTypeKey: "software",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
         },
       ];
 
@@ -485,6 +628,9 @@ describe("ProjectListFormatter", () => {
           key: "NOTYPE",
           name: "No Type Project",
           projectTypeKey: "unknown",
+          simplified: false,
+          style: "classic",
+          isPrivate: false,
         },
       ];
 
@@ -525,6 +671,9 @@ describe("ProjectListFormatter", () => {
         key: `PROJ${i}`,
         name: `Project ${i}`,
         projectTypeKey: "software",
+        simplified: false,
+        style: "classic",
+        isPrivate: false,
       }));
 
       const context: ProjectListContext = {

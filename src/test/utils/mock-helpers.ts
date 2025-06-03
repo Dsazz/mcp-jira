@@ -4,7 +4,8 @@
  */
 
 import { type Mock, mock } from "bun:test";
-import type { Issue, SearchResult } from "@features/jira/api/jira.models.types";
+import type { Issue } from "@features/jira/repositories/issue.models";
+import type { SearchResult } from "@features/jira/repositories/search.models";
 import { mockFactory } from "../mocks/jira-mock-factory";
 
 interface MockResponse {

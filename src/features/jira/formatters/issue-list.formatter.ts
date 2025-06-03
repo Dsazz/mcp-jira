@@ -1,4 +1,4 @@
-import type { Issue } from "@features/jira/api/";
+import type { Issue } from "@features/jira/repositories/issue.models";
 /**
  * Formatter for lists of JIRA issues to markdown
  */
@@ -16,7 +16,11 @@ export class IssueListFormatter implements Formatter<Issue[]> {
   format(issues: Issue[]): string {
     // Note: The caller should check for empty arrays before calling this function
     let markdown = "# Your Assigned Issues\n\n";
-    markdown += `${issues.length} issue(s) assigned to you\n\n`;
+
+    // Use proper singular/plural form based on count
+    const issueCount = issues.length;
+    const issueText = issueCount === 1 ? "issue" : "issues";
+    markdown += `${issueCount} ${issueText} assigned to you\n\n`;
 
     // Create a table
     markdown += "| Key | Summary | Status | Priority | Updated |\n";

@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import type { Board } from "@features/jira/api/jira.client.types";
-import { formatBoardList } from "@features/jira/formatters/board-list.formatter";
+import { BoardListFormatter } from "@features/jira/formatters/board-list.formatter";
+import type { Board } from "@features/jira/repositories/board.types";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 
@@ -13,7 +13,10 @@ import { setupTests } from "@test/utils/test-setup";
 setupTests();
 
 describe("BoardListFormatter", () => {
-  describe("formatBoardList function", () => {
+  // Create a formatter instance to use in all tests
+  const formatter = new BoardListFormatter();
+
+  describe("format method", () => {
     test("should format complete board list correctly", () => {
       const boards: Board[] = [
         {
@@ -69,7 +72,7 @@ describe("BoardListFormatter", () => {
         name: "test",
       };
 
-      const result = formatBoardList(boards, appliedFilters);
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain("📋 JIRA Boards");
       expect(result).toContain("Found **2** boards");
@@ -103,7 +106,7 @@ describe("BoardListFormatter", () => {
         projectKeyOrId: "NONEXISTENT",
       };
 
-      const result = formatBoardList(boards, appliedFilters);
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain("📋 JIRA Boards");
       expect(result).toContain("No boards found matching your criteria");
@@ -130,7 +133,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("📋 JIRA Boards");
       expect(result).toContain("Found **1** board");
@@ -156,7 +159,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("1. Partial Board");
       expect(result).toContain("🏃 **Scrum Board**");
@@ -181,7 +184,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("1. No Location Board");
       expect(result).toContain("📊 **Kanban Board**");
@@ -205,7 +208,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("**Project:** Test Project");
       expect(result).not.toContain("**Key:**");
@@ -225,7 +228,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("1. Empty Admins Board");
       expect(result).not.toContain("**Admin Users:**");
@@ -248,7 +251,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("**Admin Users:** User One, User Two");
       expect(result).not.toContain("**Admin Groups:**");
@@ -270,7 +273,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain(
         "**Admin Groups:** jira-administrators, project-admins",
@@ -297,7 +300,7 @@ describe("BoardListFormatter", () => {
         }),
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("🏃 **Scrum Board**");
       expect(result).toContain("📊 **Kanban Board**");
@@ -314,7 +317,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("📋 **custom Board**");
     });
@@ -332,7 +335,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("[View Sprints]");
     });
@@ -350,7 +353,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).not.toContain("[View Sprints]");
     });
@@ -383,11 +386,27 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("1. Favorite Board ⭐");
       expect(result).toContain("2. Private Board 🔒");
       expect(result).toContain("3. Favorite Private Board ⭐ 🔒");
+    });
+
+    test("should handle board with empty filters", () => {
+      const boards: Board[] = [
+        {
+          id: 1,
+          self: "https://company.atlassian.net/rest/agile/1.0/board/1",
+          name: "Test Board",
+          type: "scrum",
+        },
+      ];
+
+      const appliedFilters = {};
+      const result = formatter.format({ boards, appliedFilters });
+
+      expect(result).toContain("Found **1** board");
     });
   });
 
@@ -401,7 +420,7 @@ describe("BoardListFormatter", () => {
         type: "scrum",
       };
 
-      const result = formatBoardList(boards, appliedFilters);
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain("(filtered by type: scrum)");
     });
@@ -415,7 +434,7 @@ describe("BoardListFormatter", () => {
         projectKeyOrId: "TEST",
       };
 
-      const result = formatBoardList(boards, appliedFilters);
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain("(filtered by project: TEST)");
     });
@@ -429,7 +448,7 @@ describe("BoardListFormatter", () => {
         name: "search",
       };
 
-      const result = formatBoardList(boards, appliedFilters);
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain('(filtered by name: "search")');
     });
@@ -448,7 +467,7 @@ describe("BoardListFormatter", () => {
         name: "multi",
       };
 
-      const result = formatBoardList(boards, appliedFilters);
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain(
         '(filtered by type: scrum, project: TEST, name: "multi")',
@@ -460,7 +479,7 @@ describe("BoardListFormatter", () => {
         mockFactory.createMockBoard({ name: "No Filter Board" }),
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("Found **1** board");
       expect(result).not.toContain("(filtered by");
@@ -471,7 +490,8 @@ describe("BoardListFormatter", () => {
         mockFactory.createMockBoard({ name: "Empty Filter Board" }),
       ];
 
-      const result = formatBoardList(boards, {});
+      const appliedFilters = {};
+      const result = formatter.format({ boards, appliedFilters });
 
       expect(result).toContain("Found **1** board");
       expect(result).not.toContain("(filtered by");
@@ -484,7 +504,7 @@ describe("BoardListFormatter", () => {
         mockFactory.createMockBoard({ name: "Actions Board" }),
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("🚀 Next Actions");
       expect(result).toContain(
@@ -515,7 +535,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("Special Chars: @#$%^&*()_+-=[]{}|;':\",./<>?");
     });
@@ -533,7 +553,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain(longName);
     });
@@ -546,7 +566,7 @@ describe("BoardListFormatter", () => {
         type: "scrum" as const,
       }));
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("Found **25** boards");
       expect(result).toContain("1. Board 1");
@@ -563,7 +583,7 @@ describe("BoardListFormatter", () => {
         },
       ];
 
-      const result = formatBoardList(boards);
+      const result = formatter.format({ boards });
 
       expect(result).toContain("1. No Self URL Board");
       expect(result).toContain("[View Board]()");

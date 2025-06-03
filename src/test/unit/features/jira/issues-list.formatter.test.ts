@@ -4,9 +4,9 @@
  * Tests for JIRA issues list markdown formatting
  */
 import { describe, expect, it } from "bun:test";
-import type { Issue } from "@features/jira/api/jira.models.types";
 import { IssuesListFormatter } from "@features/jira/formatters/issues-list.formatter";
 import type { SearchResultMetadata } from "@features/jira/formatters/issues-list.formatter";
+import type { Issue } from "@features/jira/repositories/issue.models";
 
 describe("IssuesListFormatter", () => {
   const formatter = new IssuesListFormatter();

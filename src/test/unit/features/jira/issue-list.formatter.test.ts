@@ -1,11 +1,11 @@
 /**
- * Issue List Formatter Unit Tests
- * Co-located unit tests for JIRA issue list formatter
+ * Issue List Formatter Tests
+ * Tests for the issue list formatting functionality
  */
 
 import { beforeEach, describe, expect, test } from "bun:test";
-import type { Issue } from "@features/jira/api/jira.models.types";
 import { IssueListFormatter } from "@features/jira/formatters/issue-list.formatter";
+import type { Issue } from "@features/jira/repositories/issue.models";
 import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 
@@ -34,7 +34,7 @@ describe("IssueListFormatter", () => {
       const result = formatter.format([issue]);
 
       expect(result).toContain("# Your Assigned Issues");
-      expect(result).toContain("1 issue(s) assigned to you");
+      expect(result).toContain("1 issue assigned to you");
       expect(result).toContain(
         "| Key | Summary | Status | Priority | Updated |",
       );
@@ -66,7 +66,7 @@ describe("IssueListFormatter", () => {
 
       const result = formatter.format([issue1, issue2]);
 
-      expect(result).toContain("2 issue(s) assigned to you");
+      expect(result).toContain("2 issues assigned to you");
       expect(result).toContain(
         "| TEST-123 | First issue | To Do | High | 1/15/2024 |",
       );
@@ -262,7 +262,7 @@ describe("IssueListFormatter", () => {
 
       const result = formatter.format(issues);
 
-      expect(result).toContain("10 issue(s) assigned to you");
+      expect(result).toContain("10 issues assigned to you");
       expect(result).toContain(
         "| Key | Summary | Status | Priority | Updated |",
       );

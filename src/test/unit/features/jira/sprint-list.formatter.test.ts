@@ -1,11 +1,11 @@
 /**
- * Sprint List Formatter Unit Tests
- * Comprehensive unit tests for JIRA sprint list formatter
+ * Sprint List Formatter Tests
+ * Tests for the sprint list formatting functionality
  */
 
-import { describe, expect, test } from "bun:test";
-import type { Sprint } from "@features/jira/api/jira.client.types";
-import { formatSprintList } from "@features/jira/formatters/sprint-list.formatter";
+import { describe, expect, it } from "bun:test";
+import { SprintListFormatter } from "@features/jira/formatters/sprint-list.formatter";
+import type { Sprint } from "@features/jira/repositories/sprint.types";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 
@@ -13,8 +13,11 @@ import { setupTests } from "@test/utils/test-setup";
 setupTests();
 
 describe("SprintListFormatter", () => {
-  describe("formatSprintList function", () => {
-    test("should format complete sprint list correctly", () => {
+  // Create a formatter instance to use in all tests
+  const formatter = new SprintListFormatter();
+
+  describe("format method", () => {
+    it("should format complete sprint list correctly", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -58,7 +61,7 @@ describe("SprintListFormatter", () => {
         boardId: 1,
       };
 
-      const result = formatSprintList(sprints, boardId, appliedFilters);
+      const result = formatter.format({ sprints, boardId, appliedFilters });
 
       expect(result).toContain("🏃 Sprints for Board 1");
       expect(result).toContain("Found **3** sprints");
@@ -82,7 +85,7 @@ describe("SprintListFormatter", () => {
       expect(result).toContain("🚀 Next Actions");
     });
 
-    test("should handle empty sprint list", () => {
+    it("should handle empty sprint list", () => {
       const sprints: Sprint[] = [];
       const boardId = 1;
       const appliedFilters = {
@@ -90,7 +93,7 @@ describe("SprintListFormatter", () => {
         boardId: 1,
       };
 
-      const result = formatSprintList(sprints, boardId, appliedFilters);
+      const result = formatter.format({ sprints, boardId, appliedFilters });
 
       expect(result).toContain("🏃 Sprints for Board 1");
       expect(result).toContain("No sprints found matching your criteria");
@@ -101,7 +104,7 @@ describe("SprintListFormatter", () => {
       expect(result).toContain("Contact your JIRA administrator");
     });
 
-    test("should format minimal sprint data", () => {
+    it("should format minimal sprint data", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -111,7 +114,7 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("🏃 JIRA Sprints");
       expect(result).toContain("Found **1** sprint");
@@ -124,7 +127,7 @@ describe("SprintListFormatter", () => {
       expect(result).toContain("🚀 Next Actions");
     });
 
-    test("should handle missing optional fields", () => {
+    it("should handle missing optional fields", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -140,7 +143,7 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("1. Partial Sprint");
       expect(result).toContain("**State:** 🔄 ACTIVE");
@@ -150,7 +153,7 @@ describe("SprintListFormatter", () => {
       expect(result).not.toContain("**Origin Board:**");
     });
 
-    test("should handle all sprint states", () => {
+    it("should handle all sprint states", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({
           id: 1,
@@ -169,7 +172,7 @@ describe("SprintListFormatter", () => {
         }),
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("🔄 1 active, ✅ 1 closed, ⏳ 1 future");
       expect(result).toContain("🔄 ACTIVE SPRINTS (1)");
@@ -177,7 +180,7 @@ describe("SprintListFormatter", () => {
       expect(result).toContain("✅ CLOSED SPRINTS (1)");
     });
 
-    test("should group sprints by state correctly", () => {
+    it("should group sprints by state correctly", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({
           id: 1,
@@ -201,7 +204,7 @@ describe("SprintListFormatter", () => {
         }),
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("🔄 2 active, ✅ 1 closed, ⏳ 1 future");
       expect(result).toContain("🔄 ACTIVE SPRINTS (2)");
@@ -213,7 +216,7 @@ describe("SprintListFormatter", () => {
       expect(result).toContain("1. Closed Sprint 1");
     });
 
-    test("should handle sprint with goal", () => {
+    it("should handle sprint with goal", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -224,14 +227,14 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain(
         "**Goal:** Implement comprehensive user authentication system with OAuth2 integration",
       );
     });
 
-    test("should handle sprint with dates", () => {
+    it("should handle sprint with dates", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -244,14 +247,14 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("**Start:** Jan 15, 2024");
       expect(result).toContain("**End:** Jan 29, 2024");
       expect(result).toContain("**Created:** Jan 14, 2024");
     });
 
-    test("should handle closed sprint with complete date", () => {
+    it("should handle closed sprint with complete date", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -265,12 +268,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("**Completed:** Jan 14, 2024");
     });
 
-    test("should handle sprint with origin board", () => {
+    it("should handle sprint with origin board", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -281,12 +284,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("**Origin Board:** 5");
     });
 
-    test("should include board actions when origin board is present", () => {
+    it("should include board actions when origin board is present", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -297,12 +300,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("[View Board]");
     });
 
-    test("should not include board actions when origin board is missing", () => {
+    it("should not include board actions when origin board is missing", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -312,12 +315,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).not.toContain("[View Board]");
     });
 
-    test("should handle active sprint with progress calculation", () => {
+    it("should handle active sprint with progress calculation", () => {
       // Create an active sprint that started 7 days ago and ends in 7 days (50% progress)
       const now = new Date();
       const startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -334,7 +337,7 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("**Progress:**");
       expect(result).toContain("days remaining");
@@ -342,7 +345,7 @@ describe("SprintListFormatter", () => {
   });
 
   describe("filter handling", () => {
-    test("should handle state filter", () => {
+    it("should handle state filter", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({
           name: "Active Sprint",
@@ -354,50 +357,51 @@ describe("SprintListFormatter", () => {
         state: "active",
       };
 
-      const result = formatSprintList(sprints, undefined, appliedFilters);
+      const result = formatter.format({ sprints, appliedFilters });
 
       expect(result).toContain("filtered by state: **active**");
     });
 
-    test("should handle board ID context", () => {
+    it("should handle board ID context", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "Board Sprint" }),
       ];
 
       const boardId = 5;
 
-      const result = formatSprintList(sprints, boardId);
+      const result = formatter.format({ sprints, boardId });
 
       expect(result).toContain("🏃 Sprints for Board 5");
     });
 
-    test("should handle no board ID", () => {
+    it("should handle no board ID", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "General Sprint" }),
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("🏃 JIRA Sprints");
     });
 
-    test("should handle no filters", () => {
+    it("should handle no filters", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "No Filter Sprint" }),
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("Found **1** sprint");
       expect(result).not.toContain("filtered by state:");
     });
 
-    test("should handle empty filters object", () => {
+    it("should handle empty filters object", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "Empty Filter Sprint" }),
       ];
 
-      const result = formatSprintList(sprints, undefined, {});
+      const appliedFilters = {};
+      const result = formatter.format({ sprints, appliedFilters });
 
       expect(result).toContain("Found **1** sprint");
       expect(result).not.toContain("filtered by state:");
@@ -405,12 +409,12 @@ describe("SprintListFormatter", () => {
   });
 
   describe("next actions", () => {
-    test("should include comprehensive next actions", () => {
+    it("should include comprehensive next actions", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "Actions Sprint" }),
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("🚀 Next Actions");
       expect(result).toContain(
@@ -420,14 +424,14 @@ describe("SprintListFormatter", () => {
       expect(result).toContain('Filter sprints by state: `state: "active"`');
     });
 
-    test("should include board-specific next actions when board ID is provided", () => {
+    it("should include board-specific next actions when board ID is provided", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "Board Actions Sprint" }),
       ];
 
       const boardId = 5;
 
-      const result = formatSprintList(sprints, boardId);
+      const result = formatter.format({ sprints, boardId });
 
       expect(result).toContain("Use `jira_get_boards` to view board 5 details");
       expect(result).toContain("Use `jira_get_boards` to explore other boards");
@@ -435,7 +439,7 @@ describe("SprintListFormatter", () => {
   });
 
   describe("edge cases", () => {
-    test("should handle sprints with special characters in names", () => {
+    it("should handle sprints with special characters in names", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -445,12 +449,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("Special Chars: @#$%^&*()_+-=[]{}|;':\",./<>?");
     });
 
-    test("should handle sprints with very long names", () => {
+    it("should handle sprints with very long names", () => {
       const longName =
         "This is a very long sprint name that might cause formatting issues if not handled properly in the display logic";
 
@@ -463,12 +467,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain(longName);
     });
 
-    test("should handle sprints with very long goals", () => {
+    it("should handle sprints with very long goals", () => {
       const longGoal =
         "This is a very long sprint goal that contains multiple sentences and detailed descriptions of what needs to be accomplished during this sprint iteration including various user stories, bug fixes, technical debt reduction, performance improvements, and documentation updates.";
 
@@ -482,12 +486,12 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain(longGoal);
     });
 
-    test("should handle large sprint counts", () => {
+    it("should handle large sprint counts", () => {
       const sprints: Sprint[] = Array.from({ length: 20 }, (_, i) => ({
         id: i + 1,
         self: `https://company.atlassian.net/rest/agile/1.0/sprint/${i + 1}`,
@@ -495,14 +499,14 @@ describe("SprintListFormatter", () => {
         name: `Sprint ${i + 1}`,
       })) as Sprint[];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("Found **20** sprints");
       expect(result).toContain("1. Sprint 1");
       expect(result).toContain("Sprint 20");
     });
 
-    test("should handle sprints with missing self URLs", () => {
+    it("should handle sprints with missing self URLs", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -512,13 +516,13 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("1. No Self URL Sprint");
       expect(result).toContain("[View Sprint]()");
     });
 
-    test("should handle invalid dates gracefully", () => {
+    it("should handle invalid dates gracefully", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -530,13 +534,13 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("1. Invalid Date Sprint");
       // Should handle invalid dates gracefully without crashing
     });
 
-    test("should handle empty sprint name", () => {
+    it("should handle empty sprint name", () => {
       const sprints: Sprint[] = [
         {
           id: 1,
@@ -546,20 +550,20 @@ describe("SprintListFormatter", () => {
         },
       ];
 
-      const result = formatSprintList(sprints);
+      const result = formatter.format({ sprints });
 
       expect(result).toContain("**Sprint ID:** 1");
       // Should handle empty name gracefully
     });
 
-    test("should handle zero board ID", () => {
+    it("should handle zero board ID", () => {
       const sprints: Sprint[] = [
         mockFactory.createMockSprint({ name: "Zero Board Sprint" }),
       ];
 
       const boardId = 0;
 
-      const result = formatSprintList(sprints, boardId);
+      const result = formatter.format({ sprints, boardId });
 
       expect(result).toContain("🏃 JIRA Sprints");
     });

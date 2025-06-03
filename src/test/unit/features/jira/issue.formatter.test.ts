@@ -4,9 +4,9 @@
  */
 
 import { beforeEach, describe, expect, test } from "bun:test";
-import type { Issue } from "@features/jira/api/jira.models.types";
 import { IssueFormatter } from "@features/jira/formatters/issue.formatter";
-import type { ADFDocument, ADFNode } from "@features/jira/parsers/adf-parser";
+import type { ADFDocument, ADFNode } from "@features/jira/parsers/adf.parser";
+import type { Issue } from "@features/jira/repositories/issue.models";
 import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 

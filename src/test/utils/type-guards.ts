@@ -6,7 +6,7 @@
  */
 
 import type { McpResponse } from "@core/responses";
-import type { SearchResult } from "@features/jira/api/jira.models.types";
+import type { SearchResult } from "@features/jira/repositories/search.models";
 
 /**
  * Type guard to check if unknown data contains valid issues array

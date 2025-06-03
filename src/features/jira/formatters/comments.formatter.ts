@@ -1,10 +1,10 @@
+import { parseADF } from "@features/jira/parsers/adf.parser";
 /**
  * Comments Formatter
  *
  * Formats JIRA comments for display
  */
-import type { Comment } from "@features/jira/api/jira.models.types";
-import { parseADF } from "@features/jira/parsers/adf-parser";
+import type { Comment } from "@features/jira/repositories/comment.models";
 import type { Formatter } from "./formatter.interface";
 
 /**
