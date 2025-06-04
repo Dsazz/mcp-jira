@@ -13,6 +13,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced error handling and logging
 - Performance optimizations
 
+## [0.4.1] - 2025-06-04
+
+### 🐛 Critical Bug Fixes
+
+- **🚨 JIRA Issue Creation Fixed**: Resolved critical bug preventing JIRA issue creation
+  - **Issue**: JIRA Cloud API now requires `permissions` query parameter for `mypermissions` endpoint
+  - **Error**: `JiraApiError: The 'permissions' query parameter is required.`
+  - **Fix**: Added `permissions: "CREATE_ISSUES"` parameter to project validation API call
+  - **Impact**: Users can now successfully create JIRA issues through MCP integration
+  - **Location**: `src/features/jira/api/jira.client.impl.ts` - `validateProject` method
+
+### 🔧 Technical Details
+
+- **Root Cause**: JIRA Cloud API policy change requiring explicit permission specification
+- **Solution**: Updated `mypermissions` endpoint call to include required `permissions` parameter
+- **Validation**: Verified fix with TypeScript compilation and build process
+- **Testing**: Confirmed no regression in existing functionality
+
+### 📋 Release Process
+
+- **Type**: Patch release (0.4.0 → 0.4.1)
+- **Priority**: Critical - affects core functionality
+- **Compatibility**: Fully backward compatible
+- **Dependencies**: No dependency changes required
+
 ## [0.4.0] - 2025-06-02
 
 ### 🚀 Major Features
