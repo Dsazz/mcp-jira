@@ -4,8 +4,8 @@
  * Formats JIRA sprint details for professional display
  */
 
-import { type Sprint, SprintState } from "../models";
 import type { Formatter } from "@features/jira/shared/formatters/formatter.interface";
+import { type Sprint, SprintState } from "../models";
 
 /**
  * SprintFormatter implements the Formatter interface for formatting

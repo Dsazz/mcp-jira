@@ -4,50 +4,48 @@
  * Formats JIRA board lists for professional display
  */
 
+import type { StringFormatter } from "@features/jira/shared";
 import type { Board } from "../models";
-import type { Formatter } from "@features/jira/shared";
+import { BoardEntryFormatter } from "./board-entry.formatter";
 
 /**
- * BoardListFormatter implements the Formatter interface for formatting
+ * Board formatter input interface
+ */
+export interface BoardFormatterInput {
+  boards: Board[];
+  appliedFilters?: {
+    type?: string;
+    projectKeyOrId?: string;
+    name?: string;
+    state?: string;
+  };
+  paginationInfo?: {
+    hasMore?: boolean;
+    maxResults?: number;
+    startAt?: number;
+  };
+}
+
+/**
+ * BoardListFormatter implements the StringFormatter interface for formatting
  * JIRA board lists into user-friendly string representation
  */
 export class BoardListFormatter
-  implements
-    Formatter<{
-      boards: Board[];
-      appliedFilters?: {
-        type?: string;
-        projectKeyOrId?: string;
-        name?: string;
-        state?: string;
-      };
-      paginationInfo?: {
-        hasMore?: boolean;
-        maxResults?: number;
-        startAt?: number;
-      };
-    }>
+  implements StringFormatter<BoardFormatterInput>
 {
+  private readonly boardEntryFormatter: BoardEntryFormatter;
+
+  constructor() {
+    this.boardEntryFormatter = new BoardEntryFormatter();
+  }
+
   /**
    * Format board data into a string representation
    *
    * @param data The board data to format
    * @returns Formatted string representation of board data
    */
-  format(data: {
-    boards: Board[];
-    appliedFilters?: {
-      type?: string;
-      projectKeyOrId?: string;
-      name?: string;
-      state?: string;
-    };
-    paginationInfo?: {
-      hasMore?: boolean;
-      maxResults?: number;
-      startAt?: number;
-    };
-  }): string {
+  format(data: BoardFormatterInput): string {
     const { boards, appliedFilters, paginationInfo } = data;
 
     if (boards.length === 0) {
@@ -114,104 +112,14 @@ export class BoardListFormatter
   }
 
   /**
-   * Format individual board entries
+   * Format individual board entries using the extracted formatter
    */
   private formatBoardEntries(boards: Board[]): string {
-    const entries = boards.map((board, index) => {
-      const sections: string[] = [];
-
-      // Board header with type badge
-      const typeBadge = this.getTypeBadge(board.type);
-      const favoriteIcon = board.favourite ? " ⭐" : "";
-      const privateIcon = board.isPrivate ? " 🔒" : "";
-
-      sections.push(
-        `## ${index + 1}. ${board.name}${favoriteIcon}${privateIcon}`,
-      );
-      sections.push(`${typeBadge} **Board ID:** ${board.id}`);
-
-      // Project information
-      if (board.location) {
-        const projectInfo: string[] = [];
-        if (board.location.projectName) {
-          projectInfo.push(`**Project:** ${board.location.projectName}`);
-        }
-        if (board.location.projectKey) {
-          projectInfo.push(`**Key:** ${board.location.projectKey}`);
-        }
-        if (projectInfo.length > 0) {
-          sections.push(projectInfo.join(" | "));
-        }
-      }
-
-      // Permissions and access
-      const accessInfo: string[] = [];
-      if (board.canEdit !== undefined) {
-        accessInfo.push(`**Can Edit:** ${board.canEdit ? "Yes" : "No"}`);
-      }
-      if (board.isPrivate !== undefined) {
-        accessInfo.push(`**Private:** ${board.isPrivate ? "Yes" : "No"}`);
-      }
-      if (accessInfo.length > 0) {
-        sections.push(accessInfo.join(" | "));
-      }
-
-      // Admins information
-      if (board.admins) {
-        const adminInfo: string[] = [];
-        if (board.admins.users && board.admins.users.length > 0) {
-          const userNames = board.admins.users
-            .map((user) => user.displayName)
-            .join(", ");
-          adminInfo.push(`**Admin Users:** ${userNames}`);
-        }
-        if (board.admins.groups && board.admins.groups.length > 0) {
-          const groupNames = board.admins.groups
-            .map((group) => group.name)
-            .join(", ");
-          adminInfo.push(`**Admin Groups:** ${groupNames}`);
-        }
-        if (adminInfo.length > 0) {
-          sections.push(adminInfo.join(" | "));
-        }
-      }
-
-      // Quick actions
-      const actions: string[] = [];
-      actions.push(`[View Board](${board.self})`);
-      if (board.location?.projectKey) {
-        actions.push(`[Browse Issues](${board.self}/issues)`);
-      }
-      if (board.type === "scrum") {
-        actions.push(`[View Sprints](${board.self}/sprints)`);
-      }
-      actions.push(`[Board Settings](${board.self}/configuration)`);
-
-      sections.push(`**Quick Actions:** ${actions.join(" | ")}`);
-
-      // Add board type in lowercase for test compatibility
-      sections.push(`**Type:** ${board.type.toLowerCase()}`);
-
-      return sections.join("\n");
-    });
+    const entries = boards.map((board, index) =>
+      this.boardEntryFormatter.formatBoardEntry(board, index),
+    );
 
     return entries.join("\n\n---\n\n");
-  }
-
-  /**
-   * Get type badge for board type
-   */
-  private getTypeBadge(type: string): string {
-    switch (type.toLowerCase()) {
-      case "scrum":
-        return "🏃 **Scrum Board**";
-      case "kanban":
-        return "📊 **Kanban Board**";
-      case "simple":
-        return "📝 **Simple Board**";
-      default:
-        return `📋 **${type} Board**`;
-    }
   }
 
   /**

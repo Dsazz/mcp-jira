@@ -14,7 +14,7 @@ export enum JiraErrorCode {
   RATE_LIMIT_ERROR = "JIRA_RATE_LIMIT_ERROR",
   SERVER_ERROR = "JIRA_SERVER_ERROR",
   NETWORK_ERROR = "JIRA_NETWORK_ERROR",
-  BAD_REQUEST_ERROR = "JIRA_BAD_REQUEST_ERROR"
+  BAD_REQUEST_ERROR = "JIRA_BAD_REQUEST_ERROR",
 }
 
 /**
@@ -49,33 +49,39 @@ export class JiraApiError extends McpError {
   /**
    * Create API error with status code
    * Factory method for creating errors with status codes
-   * 
+   *
    * @param message - Error message
    * @param statusCode - HTTP status code
    * @param context - Additional context information
    * @returns JiraApiError instance
    */
   static withStatusCode(
-    message: string, 
-    statusCode: number, 
-    context?: Record<string, unknown>
+    message: string,
+    statusCode: number,
+    context?: Record<string, unknown>,
   ): JiraApiError {
-    return new JiraApiError(message, JiraErrorCode.API_ERROR, undefined, statusCode, context);
+    return new JiraApiError(
+      message,
+      JiraErrorCode.API_ERROR,
+      undefined,
+      statusCode,
+      context,
+    );
   }
 
   /**
    * Create API error with custom code
    * Factory method for creating errors with custom error codes
-   * 
+   *
    * @param message - Error message
    * @param code - Custom error code
    * @param context - Additional context information
    * @returns JiraApiError instance
    */
   static withCode(
-    message: string, 
-    code: string | JiraErrorCode, 
-    context?: Record<string, unknown>
+    message: string,
+    code: string | JiraErrorCode,
+    context?: Record<string, unknown>,
   ): JiraApiError {
     return new JiraApiError(message, code, undefined, undefined, context);
   }
@@ -83,7 +89,7 @@ export class JiraApiError extends McpError {
   /**
    * Create API error from API response
    * Factory method for creating errors from API responses
-   * 
+   *
    * @param message - Error message
    * @param response - JIRA API error response
    * @param statusCode - HTTP status code
@@ -91,12 +97,18 @@ export class JiraApiError extends McpError {
    * @returns JiraApiError instance
    */
   static fromResponse(
-    message: string, 
-    response: JiraErrorResponse, 
-    statusCode?: number, 
-    context?: Record<string, unknown>
+    message: string,
+    response: JiraErrorResponse,
+    statusCode?: number,
+    context?: Record<string, unknown>,
   ): JiraApiError {
-    return new JiraApiError(message, JiraErrorCode.API_ERROR, response, statusCode, context);
+    return new JiraApiError(
+      message,
+      JiraErrorCode.API_ERROR,
+      response,
+      statusCode,
+      context,
+    );
   }
 
   /**

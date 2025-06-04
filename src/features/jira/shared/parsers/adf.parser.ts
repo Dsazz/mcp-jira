@@ -34,6 +34,62 @@ export interface ADFMark {
 }
 
 /**
+ * Type guard to check if value is a string
+ */
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+/**
+ * Type guard to check if value is null or undefined
+ */
+function isNullish(value: unknown): value is null | undefined {
+  return value === null || value === undefined;
+}
+
+/**
+ * Type guard to check if value is an object (not null)
+ */
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+/**
+ * Type guard to check if value is an ADF node
+ */
+function isADFNode(value: unknown): value is ADFNode {
+  return isObject(value) && "type" in value && isString(value.type);
+}
+
+/**
+ * Type guard to check if value is an ADF document
+ */
+function isADFDocument(value: unknown): value is ADFDocument {
+  return (
+    isADFNode(value) &&
+    value.type === "doc" &&
+    "version" in value &&
+    typeof value.version === "number" &&
+    "content" in value &&
+    Array.isArray(value.content)
+  );
+}
+
+/**
+ * Type guard to check if value is a non-document ADF node
+ */
+function isNonDocumentADFNode(value: unknown): value is ADFNode {
+  return isADFNode(value) && value.type !== "doc";
+}
+
+/**
+ * Type guard to check if string is empty or whitespace only
+ */
+function isEmptyString(value: string): boolean {
+  return value.trim() === "";
+}
+
+/**
  * Converts ADF objects to markdown format preserving structure and formatting
  */
 export class ADFToMarkdownParser {
@@ -44,8 +100,8 @@ export class ADFToMarkdownParser {
    */
   parse(adf: ADFNode | string | null | undefined): string {
     // Handle backward compatibility with string descriptions
-    if (typeof adf === "string") return adf;
-    if (!adf) return "";
+    if (isString(adf)) return adf;
+    if (isNullish(adf)) return "";
 
     return this.parseNode(adf);
   }
@@ -115,7 +171,7 @@ export class ADFToMarkdownParser {
           break;
         case "link": {
           const href = mark.attrs?.href;
-          if (href && typeof href === "string") {
+          if (href && isString(href)) {
             formattedText = `[${formattedText}](${href})`;
           }
           break;
@@ -196,8 +252,8 @@ export class ADFToMarkdownParser {
    * Extract plain text only (alternative format for simple use cases)
    */
   extractPlainText(adf: ADFNode | string | null | undefined): string {
-    if (typeof adf === "string") return adf;
-    if (!adf) return "";
+    if (isString(adf)) return adf;
+    if (isNullish(adf)) return "";
 
     return this.extractTextFromNode(adf);
   }
@@ -243,4 +299,75 @@ export function extractTextFromADF(
   adf: ADFNode | string | null | undefined,
 ): string {
   return adfParser.extractPlainText(adf);
+}
+
+/**
+ * Convert plain text to ADF document format
+ * @param text - Plain text string
+ * @returns ADF document structure
+ */
+export function textToADF(text: string | null | undefined): ADFDocument | null {
+  if (isNullish(text) || isEmptyString(text)) {
+    return null;
+  }
+
+  // Split text into paragraphs (by double newlines or single newlines)
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  if (paragraphs.length === 0) {
+    return null;
+  }
+
+  const content: ADFNode[] = paragraphs.map((paragraph) => ({
+    type: "paragraph",
+    content: [
+      {
+        type: "text",
+        text: paragraph,
+      },
+    ],
+  }));
+
+  return {
+    version: 1,
+    type: "doc",
+    content,
+  };
+}
+
+/**
+ * Convert text to ADF or return existing ADF if already in correct format
+ * @param input - Text string or existing ADF document/node
+ * @returns ADF document structure or null
+ */
+export function ensureADFFormat(
+  input: string | ADFDocument | ADFNode | null | undefined,
+): ADFDocument | null {
+  if (isNullish(input)) {
+    return null;
+  }
+
+  // If it's already an ADF document, return as-is
+  if (isADFDocument(input)) {
+    return input;
+  }
+
+  // If it's an ADF node but not a document, wrap it in a document
+  if (isNonDocumentADFNode(input)) {
+    return {
+      version: 1,
+      type: "doc",
+      content: [input],
+    };
+  }
+
+  // If it's a string, convert to ADF
+  if (isString(input)) {
+    return textToADF(input);
+  }
+
+  return null;
 }

@@ -110,6 +110,7 @@ export class ProjectRepositoryImpl implements ProjectRepository {
       method: "GET",
       queryParams: {
         projectKey,
+        permissions: "CREATE_ISSUES,EDIT_ISSUES,DELETE_ISSUES",
       },
     });
   }

@@ -14,4 +14,4 @@ export interface ErrorResponse {
   }>;
   isError: boolean;
   errorCode: string;
-} 
+}

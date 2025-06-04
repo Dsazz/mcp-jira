@@ -5,8 +5,8 @@
  */
 
 import { JiraApiError } from "@features/jira/client/errors";
-import type { BoardRepository } from "../repositories";
 import type { Board } from "../models";
+import type { BoardRepository } from "../repositories";
 
 /**
  * Request parameters for get boards use case
@@ -20,7 +20,7 @@ export interface GetBoardsUseCaseRequest {
   orderBy?: string;
   expand?: string;
   includePrivate?: boolean;
-  filterId?: number;
+  filterId?: string;
   accountIdLocation?: string;
   projectLocation?: string;
   negateLocationFiltering?: boolean;
@@ -63,7 +63,10 @@ export class GetBoardsUseCaseImpl implements GetBoardsUseCase {
     } catch (error) {
       // Rethrow with better context if needed
       if (error instanceof Error) {
-        throw JiraApiError.withStatusCode(`Failed to get boards: ${error.message}`, 400);
+        throw JiraApiError.withStatusCode(
+          `Failed to get boards: ${error.message}`,
+          400,
+        );
       }
       throw error;
     }

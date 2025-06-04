@@ -1,4 +1,8 @@
-import { JiraApiError, JiraErrorCode, type JiraErrorResponse } from "./base.error";
+import {
+  JiraApiError,
+  JiraErrorCode,
+  type JiraErrorResponse,
+} from "./base.error";
 
 /**
  * Error thrown when network requests fail (connection issues, timeouts)
@@ -41,7 +45,13 @@ export class JiraAuthenticationError extends JiraApiError {
     response?: JiraErrorResponse,
     context?: Record<string, unknown>,
   ) {
-    super(message, JiraErrorCode.AUTHENTICATION_ERROR, response, statusCode, context);
+    super(
+      message,
+      JiraErrorCode.AUTHENTICATION_ERROR,
+      response,
+      statusCode,
+      context,
+    );
     this.name = "JiraAuthenticationError";
   }
 }
@@ -70,11 +80,11 @@ export class JiraNotFoundError extends JiraApiError {
     context?: Record<string, unknown>,
   ) {
     const isResponse = typeof entityId !== "string";
-    const message = isResponse 
-      ? `${entityType} not found` 
+    const message = isResponse
+      ? `${entityType} not found`
       : `${entityType} '${entityId}' not found`;
     const response = isResponse ? entityId : undefined;
-    
+
     super(message, JiraErrorCode.NOT_FOUND_ERROR, response, 404, context);
     this.name = "JiraNotFoundError";
   }

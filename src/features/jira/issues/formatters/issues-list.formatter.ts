@@ -1,4 +1,3 @@
-import { parseADF } from "@features/jira/shared/parsers/adf.parser";
 /**
  * Formatter for JIRA issues list to markdown
  *
@@ -7,6 +6,7 @@ import { parseADF } from "@features/jira/shared/parsers/adf.parser";
 import type { Issue } from "@features/jira/issues/models/issue.models";
 import type { SearchJiraIssuesParams } from "@features/jira/issues/use-cases/search-issues.use-case";
 import type { Formatter } from "@features/jira/shared";
+import { parseADF } from "@features/jira/shared/parsers/adf.parser";
 
 /**
  * Search result metadata for formatting context
@@ -49,7 +49,10 @@ export class IssuesListFormatter implements Formatter<Issue[], string> {
   /**
    * Format header with search information
    */
-  private formatHeader(metadata?: SearchResultMetadata, issues?: Issue[]): string {
+  private formatHeader(
+    metadata?: SearchResultMetadata,
+    issues?: Issue[],
+  ): string {
     // Start with the basic header
     let header = "# JIRA Search Results\n\n";
 
@@ -92,7 +95,9 @@ export class IssuesListFormatter implements Formatter<Issue[], string> {
     }
 
     if (params.status) {
-      const statuses = Array.isArray(params.status) ? params.status : [params.status];
+      const statuses = Array.isArray(params.status)
+        ? params.status
+        : [params.status];
       filters.push(`Status: ${statuses.join(", ")}`);
     }
 
@@ -128,7 +133,10 @@ export class IssuesListFormatter implements Formatter<Issue[], string> {
     }
 
     // Metadata line with dates
-    const dates = this.formatDates(fields.created || undefined, fields.updated || undefined);
+    const dates = this.formatDates(
+      fields.created || undefined,
+      fields.updated || undefined,
+    );
     if (dates) {
       card += `*${dates}*\n`;
     }

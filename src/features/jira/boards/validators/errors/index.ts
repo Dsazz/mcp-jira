@@ -3,4 +3,4 @@
  */
 
 // Re-export from individual error files
-export * from "./board.error"; 
+export * from "./board.error";

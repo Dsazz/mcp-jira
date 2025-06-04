@@ -4,7 +4,7 @@
  * Contains response types related to JIRA issues
  */
 
-import type { Issue } from "../../repositories/issue.models";
+import type { Issue } from "../../issues/models";
 
 /**
  * Single issue response with success/error handling
@@ -31,4 +31,4 @@ export interface NewIssueResponse {
   id: string;
   key: string;
   self: string;
-} 
+}

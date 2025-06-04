@@ -29,7 +29,7 @@ export class SprintRepositoryImpl implements SprintRepository {
     this.logger.debug(`Getting sprints for board: ${boardId}`, {
       prefix: "JIRA:SprintRepository",
     });
-    
+
     const queryParams: Record<string, string | number | undefined> = {};
 
     if (options?.startAt) {
@@ -43,13 +43,13 @@ export class SprintRepositoryImpl implements SprintRepository {
     if (options?.state) {
       queryParams.state = options.state;
     }
-    
+
     const response = await this.httpClient.sendRequest<{ values: Sprint[] }>({
       endpoint: `board/${boardId}/sprint`,
       method: "GET",
       queryParams,
     });
-    
+
     return response.values;
   }
 

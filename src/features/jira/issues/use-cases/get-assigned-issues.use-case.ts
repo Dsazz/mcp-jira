@@ -4,9 +4,10 @@
  * Business logic for retrieving issues assigned to the current user
  */
 
+import { logger } from "@core/logging";
 import { JiraApiError } from "@features/jira/client/errors";
+import type { Issue } from "../models";
 import type { IssueSearchRepository } from "../repositories";
-import type { Issue } from "../repositories/issue.models";
 
 /**
  * Request parameters for get assigned issues use case
@@ -49,16 +50,46 @@ export class GetAssignedIssuesUseCaseImpl implements GetAssignedIssuesUseCase {
     request?: GetAssignedIssuesUseCaseRequest,
   ): Promise<Issue[]> {
     try {
-      // Get assigned issues from repository
-      return await this.issueSearchRepository.getAssignedIssues(
-        request?.fields,
-      );
+      logger.debug("Executing get assigned issues use case", {
+        prefix: "JIRA:GetAssignedIssuesUseCase",
+        fields: request?.fields,
+      });
+
+      // Search for issues assigned to current user using JQL
+      const searchOptions = {
+        jql: "assignee = currentUser() ORDER BY updated DESC",
+        fields: request?.fields || [
+          "summary",
+          "status",
+          "priority",
+          "assignee",
+          "created",
+          "updated",
+        ],
+        maxResults: 50,
+        startAt: 0,
+      };
+
+      const searchResult =
+        await this.issueSearchRepository.searchIssues(searchOptions);
+
+      logger.debug(`Retrieved ${searchResult.issues.length} assigned issues`, {
+        prefix: "JIRA:GetAssignedIssuesUseCase",
+        total: searchResult.total,
+      });
+
+      return searchResult.issues;
     } catch (error) {
+      logger.error("Failed to get assigned issues", {
+        prefix: "JIRA:GetAssignedIssuesUseCase",
+        error: error instanceof Error ? error.message : String(error),
+      });
+
       // Rethrow with better context if needed
       if (error instanceof Error) {
         throw JiraApiError.withStatusCode(
           `Failed to get assigned issues: ${error.message}`,
-          400
+          400,
         );
       }
       throw error;

@@ -1,15 +1,15 @@
 import { logger } from "@core/logging";
-import { issueKeySchema } from "@features/jira/issues/validators/issue-params.validator";
-import { z } from "zod";
-import type { IssueTransitionRepository } from "../repositories/issue-transition.repository";
-import type { Issue } from "../models/issue.models";
-import type { IssueRepository } from "../repositories/issue.repository";
-import type { WorklogRepository } from "../repositories/worklog.repository";
 import type {
   IssueUpdateRequest,
   ProjectPermissionRepository,
   WorklogEntry,
 } from "@features/index";
+import { issueKeySchema } from "@features/jira/issues/validators/issue-params.validator";
+import { z } from "zod";
+import type { Issue } from "../models/issue.models";
+import type { IssueTransitionRepository } from "../repositories/issue-transition.repository";
+import type { IssueRepository } from "../repositories/issue.repository";
+import type { WorklogRepository } from "../repositories/worklog.repository";
 
 /**
  * Schema for issue update parameters

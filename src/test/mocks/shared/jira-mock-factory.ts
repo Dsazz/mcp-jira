@@ -2,15 +2,6 @@
  * Shared JIRA mock factory for testing
  */
 import { mock } from "bun:test";
-import type { 
-  BoardRepository,
-  IssueCommentRepository, 
-  IssueRepository,
-  IssueSearchRepository,
-  ProjectRepository,
-  SprintRepository,
-  UserRepository
-} from "@features/jira/shared/repositories";
 
 /**
  * Creates a mock JIRA client

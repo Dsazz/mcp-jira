@@ -5,10 +5,11 @@
  * and validation capabilities
  */
 
-import { z } from "zod";
+import { logger } from "@core/logging";
 import { JiraApiError } from "@features/jira/client/errors";
+import { z } from "zod";
+import type { Issue, SearchIssuesOptions } from "../models";
 import type { IssueSearchRepository } from "../repositories";
-import type { Issue } from "../repositories/issue.models";
 
 /**
  * Base schema for search parameters (without refinement)
@@ -129,21 +130,50 @@ export class SearchIssuesUseCaseImpl implements SearchIssuesUseCase {
    */
   public async execute(request: SearchIssuesUseCaseRequest): Promise<Issue[]> {
     try {
+      logger.debug("Executing search issues use case", {
+        prefix: "JIRA:SearchIssuesUseCase",
+        request,
+      });
+
       // Build JQL query from search parameters
       const jqlQuery = this.buildJQLQuery(request);
 
+      // Prepare search options
+      const searchOptions: SearchIssuesOptions = {
+        jql: jqlQuery,
+        fields: request.fields || [
+          "summary",
+          "status",
+          "priority",
+          "assignee",
+          "created",
+          "updated",
+        ],
+        maxResults: request.maxResults || 25,
+        startAt: 0,
+      };
+
       // Search for issues using repository
-      return await this.issueSearchRepository.searchIssues(
-        jqlQuery,
-        request.fields,
-        request.maxResults,
-      );
+      const searchResult =
+        await this.issueSearchRepository.searchIssues(searchOptions);
+
+      logger.debug(`Found ${searchResult.issues.length} issues`, {
+        prefix: "JIRA:SearchIssuesUseCase",
+        total: searchResult.total,
+      });
+
+      return searchResult.issues;
     } catch (error) {
+      logger.error("Failed to search issues", {
+        prefix: "JIRA:SearchIssuesUseCase",
+        error: error instanceof Error ? error.message : String(error),
+      });
+
       // Rethrow with better context if needed
       if (error instanceof Error) {
         throw JiraApiError.withStatusCode(
           `Failed to search issues: ${error.message}`,
-          400
+          400,
         );
       }
       throw error;

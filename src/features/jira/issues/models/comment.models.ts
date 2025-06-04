@@ -2,7 +2,10 @@
  * JIRA comment models
  */
 
-import type { ADFDocument, ADFNode } from "@features/jira/shared/parsers/adf.parser";
+import type {
+  ADFDocument,
+  ADFNode,
+} from "@features/jira/shared/parsers/adf.parser";
 
 /**
  * Comment author information

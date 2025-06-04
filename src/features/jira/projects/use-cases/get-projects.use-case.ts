@@ -4,12 +4,9 @@
  * Business logic for retrieving JIRA projects with filtering capabilities
  */
 
-import { JiraApiError } from "@features/jira/client/errors";
+import type { GetProjectsOptions, Project } from "../models";
 import type { ProjectRepository } from "../repositories/project.repository";
-import type {
-  GetProjectsOptions,
-  Project,
-} from "../models";
+import { ProjectUseCaseError } from "../validators/errors";
 
 /**
  * Request parameters for get projects use case
@@ -65,9 +62,13 @@ export class GetProjectsUseCaseImpl implements GetProjectsUseCase {
       return await this.projectRepository.getProjects(options);
     } catch (error) {
       // Rethrow with better context if needed
-      // TODO: Use case must have specific errors
       if (error instanceof Error) {
-        throw JiraApiError.withStatusCode(`Failed to get projects: ${error.message}`, 400);
+        throw new ProjectUseCaseError(
+          `Failed to get projects: ${error.message}`,
+          500,
+          undefined,
+          { originalError: error },
+        );
       }
       throw error;
     }

@@ -5,8 +5,8 @@
  */
 
 import { JiraApiError } from "@features/jira/client/errors";
-import type { SprintRepository } from "../repositories/sprint.repository";
 import type { Sprint, SprintState } from "../models";
+import type { SprintRepository } from "../repositories/sprint.repository";
 
 /**
  * Request parameters for get sprints use case

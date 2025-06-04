@@ -3,4 +3,11 @@
  */
 export * from "./project.validator";
 export * from "./project-params.validator";
-export * from "./project-permission.checker";
+
+// Export schemas from validators
+export {
+  getProjectsParamsSchema,
+  getProjectParamsSchema,
+  type GetProjectsParams,
+  type GetProjectParams,
+} from "./project-params.validator";

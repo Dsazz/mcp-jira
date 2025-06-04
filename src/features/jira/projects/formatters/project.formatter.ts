@@ -2,8 +2,8 @@
  * Project formatter
  */
 
-import type { Project } from "../models/project.models";
 import type { Formatter } from "../../shared/formatters/formatter.interface";
+import type { Project } from "../models/project.models";
 
 /**
  * Formatter class for project data
@@ -44,4 +44,4 @@ export class ProjectFormatter implements Formatter<Project, string> {
 
     return formattedProject;
   }
-} 
+}

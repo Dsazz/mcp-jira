@@ -3,23 +3,22 @@
  */
 
 // Models
-export * from './models/board.types';
+export * from "./models";
 
 // Repositories
-export * from './repositories/board.repository';
+export * from "./repositories/board.repository";
 
 // Validators
-export * from './validators/board.validator';
+export * from "./validators/board.validator";
 
 // Validator Errors
-export * from './validators/errors/board.error';
+export * from "./validators/errors/board.error";
 
 // Formatters
-export * from './formatters/board-list.formatter';
+export * from "./formatters/board-list.formatter";
 
 // Use Cases
-export * from './use-cases/get-boards.use-case';
+export * from "./use-cases/get-boards.use-case";
 
-// Tools
-export * from './tools/get-boards.handler';
-
+// Handlers
+export * from "./handlers/get-boards.handler";

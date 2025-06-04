@@ -12,7 +12,7 @@ export interface UserProfileValidator {
    * Validate get users options
    */
   validateGetUsers(options?: GetUsersOptions): void;
-  
+
   /**
    * Validate get user profile parameters
    */
@@ -35,15 +35,28 @@ export class UserProfileValidatorImpl implements UserProfileValidator {
       throw new JiraIssueValidationError("query must be a string");
     }
 
-    if (options.startAt !== undefined && (typeof options.startAt !== "number" || options.startAt < 0)) {
-      throw new JiraIssueValidationError("startAt must be a non-negative number");
+    if (
+      options.startAt !== undefined &&
+      (typeof options.startAt !== "number" || options.startAt < 0)
+    ) {
+      throw new JiraIssueValidationError(
+        "startAt must be a non-negative number",
+      );
     }
 
-    if (options.maxResults !== undefined && (typeof options.maxResults !== "number" || options.maxResults <= 0)) {
-      throw new JiraIssueValidationError("maxResults must be a positive number");
+    if (
+      options.maxResults !== undefined &&
+      (typeof options.maxResults !== "number" || options.maxResults <= 0)
+    ) {
+      throw new JiraIssueValidationError(
+        "maxResults must be a positive number",
+      );
     }
 
-    if (options.includeInactive !== undefined && typeof options.includeInactive !== "boolean") {
+    if (
+      options.includeInactive !== undefined &&
+      typeof options.includeInactive !== "boolean"
+    ) {
       throw new JiraIssueValidationError("includeInactive must be a boolean");
     }
   }
@@ -60,4 +73,4 @@ export class UserProfileValidatorImpl implements UserProfileValidator {
       throw new JiraIssueValidationError("Account ID must be a string");
     }
   }
-} 
+}

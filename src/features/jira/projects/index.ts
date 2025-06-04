@@ -22,5 +22,5 @@ export * from "./formatters/project-list.formatter";
 // Use Cases
 export * from "./use-cases/get-projects.use-case";
 
-// Tools
-export * from "./tools/get-projects.handler";
+// Handlers
+export * from "./handlers/get-projects.handler";

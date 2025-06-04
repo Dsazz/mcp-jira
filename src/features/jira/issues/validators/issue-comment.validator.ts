@@ -6,7 +6,7 @@
 
 import { formatZodError } from "@core/utils/validation";
 import { z } from "zod";
-import { JiraApiError } from "@features/jira/client/errors";
+import { CommentParamsValidationError } from "./errors";
 import { issueKeySchema } from "./issue-params.validator";
 
 /**
@@ -72,8 +72,7 @@ export class IssueCommentValidatorImpl implements IssueCommentValidator {
       const errorMessage = `Invalid issue comment parameters: ${formatZodError(
         result.error,
       )}`;
-      // TODO: Validators must have specific errors
-      throw JiraApiError.withStatusCode(errorMessage, 400);
+      throw new CommentParamsValidationError(errorMessage, { params });
     }
 
     return result.data;

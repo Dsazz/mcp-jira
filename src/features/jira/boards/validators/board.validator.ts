@@ -6,7 +6,7 @@
 
 import { formatZodError } from "@core/utils/validation";
 import { z } from "zod";
-import { JiraApiError } from "@features/jira/client/errors";
+import { BoardParamsValidationError } from "./errors";
 
 /**
  * Schema for getting boards parameters
@@ -32,7 +32,7 @@ export const getBoardsParamsSchema = z.object({
   expand: z.enum(["admins", "permissions"]).optional(),
 
   // Filter by saved filter
-  filterId: z.number().int().min(1).optional(),
+  filterId: z.string().min(1).optional(),
 });
 
 /**
@@ -83,8 +83,7 @@ export class BoardValidatorImpl implements BoardValidator {
       const errorMessage = `Invalid board retrieval parameters: ${formatZodError(
         result.error,
       )}`;
-      // TODO: Validators must have specific errors
-      throw JiraApiError.withStatusCode(errorMessage, 400);
+      throw new BoardParamsValidationError(errorMessage, { params });
     }
 
     return result.data;

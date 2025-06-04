@@ -1,35 +1,18 @@
+import { mock } from "bun:test";
 /**
  * Repository test utilities
  */
-import { 
-  BoardRepository,
+import type { BoardRepository } from "@features/jira/boards/repositories";
+import type {
   IssueCommentRepository,
-  IssueRepository,
-  IssueSearchRepository,
-  IssueTransitionRepository,
-  ProjectRepository,
-  SprintRepository,
-  UserProfileRepository,
   WorklogRepository,
-} from "@features/jira/shared/repositories";
-
-import type { Comment } from "@features/jira/issues/models/comment.models";
-import type { Issue } from "@features/jira/issues/models/issue.models";
-import type { Transition } from "@features/jira/issues/models/issue.types";
-import type { Project } from "@features/jira/projects/models";
-import type { WorklogEntry } from "@features/jira/issues/models/worklog.types";
-import type { 
-  CreateIssueRequest,
-  CreateIssueResponse,
-  UpdateIssueRequest
-} from "@features/jira/shared/use-cases";
-
-import { 
-  ProjectPermissionChecker,
-  ProjectValidator,
-} from "@features/jira/shared/validators";
-
-import { mock } from "bun:test";
+} from "@features/jira/issues/repositories";
+import type { IssueRepository } from "@features/jira/issues/repositories";
+import type { IssueSearchRepository } from "@features/jira/issues/repositories";
+import type { IssueTransitionRepository } from "@features/jira/issues/repositories";
+import type { ProjectRepository } from "@features/jira/projects/repositories";
+import type { SprintRepository } from "@features/jira/sprints/repositories";
+import type { UserProfileRepository } from "@features/jira/users/repositories/user-profile.repository";
 
 /**
  * Creates a mock board repository
@@ -57,7 +40,8 @@ export function createMockIssueRepository() {
 export function createMockIssueSearchRepository() {
   return {
     searchIssues: mock(),
-  } as IssueSearchRepository & Record<keyof IssueSearchRepository, ReturnType<typeof mock>>;
+  } as IssueSearchRepository &
+    Record<keyof IssueSearchRepository, ReturnType<typeof mock>>;
 }
 
 /**
@@ -65,9 +49,10 @@ export function createMockIssueSearchRepository() {
  */
 export function createMockIssueTransitionRepository() {
   return {
-    getTransitions: mock(),
-    transition: mock(),
-  } as IssueTransitionRepository & Record<keyof IssueTransitionRepository, ReturnType<typeof mock>>;
+    getIssueTransitions: mock(),
+    transitionIssue: mock(),
+  } as IssueTransitionRepository &
+    Record<keyof IssueTransitionRepository, ReturnType<typeof mock>>;
 }
 
 /**
@@ -75,8 +60,9 @@ export function createMockIssueTransitionRepository() {
  */
 export function createMockIssueCommentRepository() {
   return {
-    getComments: mock(),
-  } as IssueCommentRepository & Record<keyof IssueCommentRepository, ReturnType<typeof mock>>;
+    getIssueComments: mock(),
+  } as IssueCommentRepository &
+    Record<keyof IssueCommentRepository, ReturnType<typeof mock>>;
 }
 
 /**
@@ -85,7 +71,8 @@ export function createMockIssueCommentRepository() {
 export function createMockProjectRepository() {
   return {
     getProjects: mock(),
-  } as ProjectRepository & Record<keyof ProjectRepository, ReturnType<typeof mock>>;
+  } as ProjectRepository &
+    Record<keyof ProjectRepository, ReturnType<typeof mock>>;
 }
 
 /**
@@ -94,7 +81,8 @@ export function createMockProjectRepository() {
 export function createMockSprintRepository() {
   return {
     getSprints: mock(),
-  } as SprintRepository & Record<keyof SprintRepository, ReturnType<typeof mock>>;
+  } as SprintRepository &
+    Record<keyof SprintRepository, ReturnType<typeof mock>>;
 }
 
 /**
@@ -103,7 +91,8 @@ export function createMockSprintRepository() {
 export function createMockUserProfileRepository() {
   return {
     getCurrentUser: mock(),
-  } as UserProfileRepository & Record<keyof UserProfileRepository, ReturnType<typeof mock>>;
+  } as UserProfileRepository &
+    Record<keyof UserProfileRepository, ReturnType<typeof mock>>;
 }
 
 /**
@@ -112,5 +101,6 @@ export function createMockUserProfileRepository() {
 export function createMockWorklogRepository() {
   return {
     addWorklog: mock(),
-  } as WorklogRepository & Record<keyof WorklogRepository, ReturnType<typeof mock>>;
+  } as WorklogRepository &
+    Record<keyof WorklogRepository, ReturnType<typeof mock>>;
 }

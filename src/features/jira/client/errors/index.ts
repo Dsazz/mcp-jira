@@ -37,6 +37,8 @@ export { JiraAuthenticationError };
 
 // Import domain-specific validation errors
 import {
+  CommentIdValidationError,
+  CommentParamsValidationError,
   IssueCreateParamsValidationError,
   IssueCreationError,
   IssueTransitionValidationError,
@@ -45,8 +47,6 @@ import {
   WorklogIdValidationError,
   WorklogParamsValidationError,
   WorklogTimeFormatValidationError,
-  CommentIdValidationError,
-  CommentParamsValidationError,
 } from "@features/jira/issues/validators/errors";
 
 import {
@@ -54,9 +54,7 @@ import {
   BoardParamsValidationError,
 } from "@features/jira/boards/validators/errors";
 
-import {
-  ProjectValidationError,
-} from "@features/jira/projects/validators/errors";
+import { ProjectValidationError } from "@features/jira/projects/validators/errors";
 
 import {
   SprintIdValidationError,

@@ -5,8 +5,8 @@
  */
 
 import { formatZodError } from "@core/utils/validation";
-import { z } from "zod";
 import { JiraApiError } from "@features/jira/client/errors";
+import { z } from "zod";
 import { issueKeySchema } from "./issue-params.validator";
 
 /**

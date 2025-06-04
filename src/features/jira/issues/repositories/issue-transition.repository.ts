@@ -1,6 +1,6 @@
 import { logger } from "@core/logging";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
-import type { Transition } from "./issue.types";
+import type { Transition } from "../models";
 
 /**
  * Repository interface for issue transition operations

@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { logger } from "@core/logging";
+import { logger } from "../logging";
 import { z } from "zod";
 
 /**

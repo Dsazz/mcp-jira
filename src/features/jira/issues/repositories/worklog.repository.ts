@@ -1,6 +1,6 @@
 import { logger } from "@core/logging";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
-import type { WorklogEntry } from "./worklog.types";
+import type { WorklogEntry } from "../models";
 
 /**
  * Repository interface for worklog operations

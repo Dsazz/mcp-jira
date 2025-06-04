@@ -1,8 +1,34 @@
+import { ValidationError } from "@core/errors";
 import {
   JiraApiError,
   JiraErrorCode,
   type JiraErrorResponse,
 } from "@features/jira/client/errors/base.error";
+
+/**
+ * Error thrown when project parameters validation fails
+ */
+export class ProjectParamsValidationError extends ValidationError {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super(message, context);
+    this.name = "ProjectParamsValidationError";
+  }
+}
+
+/**
+ * Error thrown when project use case operations fail
+ */
+export class ProjectUseCaseError extends JiraApiError {
+  constructor(
+    message: string,
+    statusCode = 500,
+    response?: JiraErrorResponse,
+    context?: Record<string, unknown>,
+  ) {
+    super(message, JiraErrorCode.SERVER_ERROR, response, statusCode, context);
+    this.name = "ProjectUseCaseError";
+  }
+}
 
 /**
  * Error thrown when project validation fails

@@ -1,5 +1,3 @@
-import { normalizeError } from "@core/errors";
-import { logger } from "@core/logging";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 /**
  * Server Lifecycle
@@ -7,6 +5,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
  * Server lifecycle management functions for starting, connecting, and stopping the MCP server
  */
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { normalizeError } from "../errors";
+import { logger } from "../logging";
 import { serverConfig } from "./server.config";
 import { setupErrorHandlers, setupSignalHandlers } from "./server.handlers";
 import type { ServerCleanup } from "./server.handlers";

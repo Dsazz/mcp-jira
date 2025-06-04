@@ -1,10 +1,16 @@
 import { logger } from "@core/logging";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
-import type {
-  Comment,
-  CommentsResult,
-  GetCommentsOptions,
-} from "./comment.models";
+import type { Comment, GetCommentsOptions } from "../models";
+
+/**
+ * Comments API response interface
+ */
+interface CommentsResult {
+  comments: Comment[];
+  maxResults: number;
+  startAt: number;
+  total: number;
+}
 
 /**
  * Repository interface for issue comment operations
@@ -39,8 +45,8 @@ export class IssueCommentRepositoryImpl implements IssueCommentRepository {
 
     const queryParams: Record<string, string | number | undefined> = {};
 
-    if (options?.maxComments) {
-      queryParams.maxResults = options.maxComments;
+    if (options?.maxResults) {
+      queryParams.maxResults = options.maxResults;
     }
 
     if (options?.startAt) {

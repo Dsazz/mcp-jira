@@ -1,10 +1,6 @@
 import { logger } from "@core/logging";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
-import type {
-  Board,
-  BoardConfiguration,
-  GetBoardsOptions,
-} from "./../models";
+import type { Board, BoardConfiguration, GetBoardsOptions } from "./../models";
 
 /**
  * Repository interface for board operations and retrieval

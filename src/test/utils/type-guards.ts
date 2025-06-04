@@ -32,7 +32,10 @@ function hasValidIssuesWithItems(data: unknown): data is IssueSearchResult {
  */
 export function isSuccessfulSearchResult(
   result: McpResponse<unknown>,
-): result is McpResponse<IssueSearchResult> & { success: true; data: IssueSearchResult } {
+): result is McpResponse<IssueSearchResult> & {
+  success: true;
+  data: IssueSearchResult;
+} {
   return (
     result.success && result.data !== undefined && hasValidIssues(result.data)
   );
@@ -43,7 +46,10 @@ export function isSuccessfulSearchResult(
  */
 export function isSuccessfulSearchResultWithIssues(
   result: McpResponse<unknown>,
-): result is McpResponse<IssueSearchResult> & { success: true; data: IssueSearchResult } {
+): result is McpResponse<IssueSearchResult> & {
+  success: true;
+  data: IssueSearchResult;
+} {
   return (
     result.success &&
     result.data !== undefined &&

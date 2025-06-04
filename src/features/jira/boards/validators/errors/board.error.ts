@@ -18,4 +18,4 @@ export class BoardIdValidationError extends ValidationError {
     super(message, context);
     this.name = "BoardIdValidationError";
   }
-} 
+}

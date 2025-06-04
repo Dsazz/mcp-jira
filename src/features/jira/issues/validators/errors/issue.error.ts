@@ -1,4 +1,8 @@
-import { JiraApiError, JiraErrorCode, type JiraErrorResponse } from "@features/jira/client";
+import {
+  JiraApiError,
+  JiraErrorCode,
+  type JiraErrorResponse,
+} from "@features/jira/client";
 
 /**
  * Error thrown when issue creation fails due to validation or field issues

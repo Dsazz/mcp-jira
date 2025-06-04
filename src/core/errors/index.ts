@@ -8,7 +8,10 @@
 export { McpError } from "./mcp.error";
 export { ValidationError } from "./validation.error";
 export { HttpError } from "./http.error";
-export { NotFoundError } from "./not-found.error";
+
+// Export HTTP error handling utilities
+export { BaseHttpErrorHandler, type ErrorResponse } from "./http-error.handler";
+export { NetworkErrorClassifier } from "./network-error.classifier";
 
 // Export utility functions
 export { normalizeError, toMcpError } from "./error.util";

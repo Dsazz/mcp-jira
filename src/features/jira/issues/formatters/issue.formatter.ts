@@ -1,108 +1,131 @@
+import type { Formatter } from "@features/jira/shared/formatters/formatter.interface";
 /**
  * Issue formatter
  */
 import type { Issue } from "../models/issue.models";
-import type { Formatter } from "@features/jira/shared/formatters/formatter.interface";
-import { parseADF } from "@features/jira/shared/parsers/adf.parser";
+import {
+  IssueFieldValidator,
+  hasDateInfo,
+  hasLabels,
+  hasValidDescription,
+  hasValidSelfUrl,
+  validateIssue,
+} from "../validators/issue-field.validator";
+import { IssueDatesFormatter } from "./issue-dates.formatter";
+import { IssueDescriptionFormatter } from "./issue-description.formatter";
+import { IssueHeaderFormatter } from "./issue-header.formatter";
 
 /**
- * Issue formatter class that converts issues to markdown strings
+ * Issue formatter class that converts issues to markdown strings using Zod schema validation
  */
 export class IssueFormatter implements Formatter<Issue, string> {
+  private readonly fieldValidator: IssueFieldValidator;
+  private readonly headerFormatter: IssueHeaderFormatter;
+  private readonly descriptionFormatter: IssueDescriptionFormatter;
+  private readonly datesFormatter: IssueDatesFormatter;
+
+  constructor() {
+    this.fieldValidator = new IssueFieldValidator();
+    this.headerFormatter = new IssueHeaderFormatter();
+    this.descriptionFormatter = new IssueDescriptionFormatter();
+    this.datesFormatter = new IssueDatesFormatter();
+  }
+
   format(issue: Issue): string {
     if (!issue) {
       return "";
     }
-    
+
+    // Validate issue structure using Zod schema
+    const validationResult = validateIssue(issue);
+    if (!validationResult.success) {
+      return this.headerFormatter.formatFallbackHeader(issue.key || "");
+    }
+
+    // Use original issue for compatibility with existing interfaces
+    const validatedIssue = issue;
+
     // Handle case where issue exists but fields is null or undefined
-    if (!issue.fields) {
-      let markdown = issue.key ? `# ${issue.key}: No Summary\n\n` : "";
-      markdown += "**Status:** Unknown\n";
-      markdown += "**Priority:** None\n";
-      markdown += "**Assignee:** Unassigned\n\n";
-      return markdown;
+    if (this.fieldValidator.hasEmptyFields(validatedIssue)) {
+      return this.headerFormatter.formatFallbackHeader(
+        validatedIssue.key || "",
+      );
     }
 
-    // Title with key and summary
-    let markdown = `# ${issue.key}: ${issue.fields.summary || "No Summary"}\n\n`;
+    // Get safe field values using schema validation
+    const safeValues = this.fieldValidator.getSafeFieldValues(validatedIssue);
 
-    // Status, Priority, Assignee
-    markdown += `**Status:** ${issue.fields.status?.name || "Unknown"}\n`;
-    markdown += `**Priority:** ${issue.fields.priority?.name || "None"}\n`;
-    markdown += `**Assignee:** ${issue.fields.assignee?.displayName || "Unassigned"}\n\n`;
+    // Build the formatted output using extracted formatters
+    let markdown = "";
 
-    // Description - only add if description is non-empty
-    if (issue.fields.description) {
-      const isEmptyObject = typeof issue.fields.description === "object" && 
-                           (!issue.fields.description.content || 
-                            issue.fields.description.content.length === 0);
-      
-      if (!isEmptyObject) {
-        markdown += "## Description\n";
-        
-        // Handle ADF document or string description
-        if (typeof issue.fields.description === "object") {
-          const descriptionMarkdown = parseADF(issue.fields.description);
-          markdown += `${descriptionMarkdown}\n\n`;
-        } else {
-          markdown += `${issue.fields.description}\n\n`;
-        }
-      }
+    // Title and basic info
+    markdown += this.headerFormatter.formatTitle(
+      safeValues.key,
+      safeValues.summary,
+    );
+    markdown += this.headerFormatter.formatBasicInfo(
+      safeValues.status,
+      safeValues.priority,
+      safeValues.assignee,
+    );
+
+    // Description - use schema-based validation
+    if (hasValidDescription(validatedIssue)) {
+      markdown += this.descriptionFormatter.formatDescription(validatedIssue);
     }
 
-    // Labels
-    if (issue.fields.labels && issue.fields.labels.length > 0) {
-      markdown += "## Labels\n";
-      markdown += `${issue.fields.labels.join(", ")}\n\n`;
+    // Labels - use schema-based validation
+    if (hasLabels(validatedIssue)) {
+      markdown += this.headerFormatter.formatLabels(
+        validatedIssue.fields?.labels || [],
+      );
     }
 
-    // Dates - only show section if at least one date exists
-    if (issue.fields.created || issue.fields.updated) {
-      markdown += "## Dates\n";
-      if (issue.fields.created) {
-        markdown += `**Created**: ${new Date(issue.fields.created).toLocaleString()}\n`;
-      }
-      if (issue.fields.updated) {
-        markdown += `**Updated**: ${new Date(issue.fields.updated).toLocaleString()}\n`;
-      }
-      markdown += "\n";
+    // Dates - use schema-based validation
+    if (hasDateInfo(validatedIssue)) {
+      markdown += this.datesFormatter.formatDates(validatedIssue);
     }
 
-    // Link to JIRA
-    if (issue.self) {
-      const baseUrl = issue.self.split("/rest/")[0];
-      markdown += `[View in JIRA](${baseUrl}/browse/${issue.key})\n`;
+    // JIRA link - use schema-based validation
+    if (hasValidSelfUrl(validatedIssue)) {
+      markdown += this.headerFormatter.formatJiraLink(validatedIssue);
     }
 
     return markdown;
   }
-  
+
   /**
-   * Format an issue as a simple object (for API compatibility)
+   * Format an issue as a simple object (for API compatibility) with schema validation
    */
   formatAsObject(issue: Issue) {
-    if (!issue || !issue.fields) {
+    if (!issue) {
       return {};
     }
-    
-    // Cast to any to avoid index signature access requirements
-    const fields = issue.fields as any;
-    
+
+    // Validate issue structure using Zod schema
+    const validationResult = validateIssue(issue);
+    if (!validationResult.success || !issue.fields) {
+      return {};
+    }
+
+    // Use original issue for compatibility with existing interfaces
+    const fields = issue.fields;
+
     return {
       id: issue.id,
       key: issue.key,
       self: issue.self,
       fields: {
-        summary: issue.fields.summary,
-        description: issue.fields.description,
-        issuetype: issue.fields.issuetype,
+        summary: fields.summary,
+        description: fields.description,
+        issuetype: fields.issuetype,
         project: fields.project,
-        status: issue.fields.status,
+        status: fields.status,
         creator: fields.creator,
-        reporter: issue.fields.reporter,
-        assignee: issue.fields.assignee,
-        created: issue.fields.created,
-        updated: issue.fields.updated,
+        reporter: fields.reporter,
+        assignee: fields.assignee,
+        created: fields.created,
+        updated: fields.updated,
       },
     };
   }

@@ -5,8 +5,8 @@
  */
 
 import { formatZodError } from "@core/utils/validation";
-import { z } from "zod";
 import { JiraApiError } from "@features/jira/client/errors";
+import { z } from "zod";
 
 /**
  * Schema for validating JIRA issue keys
@@ -17,6 +17,22 @@ import { JiraApiError } from "@features/jira/client/errors";
 export const issueKeySchema = z
   .string()
   .regex(/^[A-Z]+-\d+$/, "Issue key must be in the format PROJECT-123");
+
+/**
+ * Schema for get issue parameters
+ */
+export const getIssueParamsSchema = z.object({
+  issueKey: issueKeySchema,
+  fields: z.array(z.string()).optional(),
+});
+
+/**
+ * Schema for get assigned issues parameters
+ * No parameters required - retrieves issues assigned to the current user
+ */
+export const getAssignedIssuesParamsSchema = z
+  .object({})
+  .describe("Retrieve all issues assigned to the current user");
 
 /**
  * Schema for common JIRA issue fields
@@ -54,10 +70,14 @@ export type JiraIssueList = JiraIssue[];
 /**
  * Parameters for getting a JIRA issue
  */
-export interface GetIssueParams {
-  issueKey: string;
-  fields?: string[];
-}
+export type GetIssueParams = z.infer<typeof getIssueParamsSchema>;
+
+/**
+ * Parameters for getting assigned issues
+ */
+export type GetAssignedIssuesParams = z.infer<
+  typeof getAssignedIssuesParamsSchema
+>;
 
 /**
  * Interface for issue params validator
@@ -94,7 +114,10 @@ export class IssueParamsValidatorImpl implements IssueParamsValidator {
 
     // Validate fields if provided
     if (params.fields && !Array.isArray(params.fields)) {
-      throw JiraApiError.withStatusCode("Fields must be an array of strings", 400);
+      throw JiraApiError.withStatusCode(
+        "Fields must be an array of strings",
+        400,
+      );
     }
 
     return {

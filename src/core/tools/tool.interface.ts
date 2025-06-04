@@ -1,10 +1,10 @@
-import type { McpResponse } from "@core/responses";
 /**
  * Tool Interface
  *
  * Base interface for MCP tools
  */
 import type { z } from "zod";
+import type { McpResponse } from "../responses";
 
 /**
  * Tool Interfaces

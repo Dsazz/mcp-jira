@@ -28,4 +28,4 @@ export class WorklogIdValidationError extends ValidationError {
     super(message, context);
     this.name = "WorklogIdValidationError";
   }
-} 
+}

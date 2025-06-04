@@ -37,6 +37,7 @@ export class ProjectPermissionRepositoryImpl
       method: "GET",
       queryParams: {
         projectKey,
+        permissions: "CREATE_ISSUES,EDIT_ISSUES,DELETE_ISSUES",
       },
     });
 

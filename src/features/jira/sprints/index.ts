@@ -20,5 +20,5 @@ export * from "./formatters/sprint-list.formatter";
 // Use Cases
 export * from "./use-cases/get-sprints.use-case";
 
-// Tools
-export * from "./tools/get-sprints.handler";
+// Handlers
+export * from "./handlers/get-sprints.handler";

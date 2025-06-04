@@ -6,11 +6,11 @@
 
 import { formatZodError } from "@core/utils/validation";
 import { z } from "zod";
+import { SprintState } from "../models";
 import {
   SprintIdValidationError,
   SprintParamsValidationError,
 } from "./errors/sprint.error";
-import { SprintState } from "../models";
 
 /**
  * Schema for getting sprints parameters

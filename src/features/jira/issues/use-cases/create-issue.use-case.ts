@@ -1,10 +1,14 @@
 import { logger } from "@core/logging";
+import type { ProjectPermissionRepository } from "@features/index";
+import { issueKeySchema } from "@features/jira/issues/validators/issue-params.validator";
+import type { ProjectValidator } from "@features/jira/projects/validators/project.validator";
+import {
+  type ADFDocument,
+  ensureADFFormat,
+} from "@features/jira/shared/parsers/adf.parser";
 import { z } from "zod";
 import type { Issue } from "../models/issue.models";
 import type { IssueRepository } from "../repositories/issue.repository";
-import type { ProjectValidator } from "@features/jira/projects/validators/project.validator";
-import { issueKeySchema } from "@features/jira/issues/validators/issue-params.validator";
-import type { ProjectPermissionRepository } from "@features/index";
 
 /**
  * Schema for JIRA issue creation parameters
@@ -96,23 +100,37 @@ export const createIssueParamsSchema = z.object({
 export type CreateIssueParams = z.infer<typeof createIssueParamsSchema>;
 
 /**
- * Interface for create issue request (internal API format)
+ * Interface for create issue request (JIRA API format)
  */
 export interface CreateIssueRequest {
-  projectKey: string;
-  summary: string;
-  description?: string;
-  issueType: string;
-  priority?: string;
-  assignee?: string;
-  labels?: string[];
-  components?: string[];
-  fixVersions?: string[];
-  parentIssueKey?: string;
-  timeEstimate?: string;
-  environment?: string;
-  storyPoints?: number;
-  customFields?: Record<string, unknown>;
+  fields: {
+    project: {
+      key: string;
+    };
+    summary: string;
+    description?: ADFDocument | null; // ADF format or null
+    issuetype: {
+      name: string;
+    };
+    priority?: {
+      name: string;
+    };
+    assignee?: {
+      accountId: string;
+    };
+    labels?: string[];
+    components?: Array<{ name: string }>;
+    fixVersions?: Array<{ name: string }>;
+    parent?: {
+      key: string;
+    };
+    timetracking?: {
+      originalEstimate: string;
+    };
+    environment?: ADFDocument | string | null; // ADF format or string
+    customfield_10016?: number; // Story points (common custom field)
+    [key: string]: unknown; // For additional custom fields
+  };
 }
 
 /**
@@ -122,20 +140,33 @@ export function transformToCreateRequest(
   params: CreateIssueParams,
 ): CreateIssueRequest {
   return {
-    projectKey: params.projectKey,
-    summary: params.summary,
-    description: params.description,
-    issueType: params.issueType,
-    priority: params.priority,
-    assignee: params.assignee,
-    labels: params.labels,
-    components: params.components,
-    fixVersions: params.fixVersions,
-    parentIssueKey: params.parentIssueKey,
-    timeEstimate: params.timeEstimate,
-    environment: params.environment,
-    storyPoints: params.storyPoints,
-    customFields: params.customFields,
+    fields: {
+      project: {
+        key: params.projectKey,
+      },
+      summary: params.summary,
+      description: params.description
+        ? ensureADFFormat(params.description)
+        : undefined,
+      issuetype: {
+        name: params.issueType,
+      },
+      priority: params.priority ? { name: params.priority } : undefined,
+      assignee: params.assignee ? { accountId: params.assignee } : undefined,
+      labels: params.labels,
+      components: params.components?.map((name) => ({ name })),
+      fixVersions: params.fixVersions?.map((name) => ({ name })),
+      parent: params.parentIssueKey
+        ? { key: params.parentIssueKey }
+        : undefined,
+      timetracking: params.timeEstimate
+        ? { originalEstimate: params.timeEstimate }
+        : undefined,
+      environment: params.environment
+        ? ensureADFFormat(params.environment)
+        : undefined,
+      customfield_10016: params.storyPoints,
+    },
   };
 }
 
@@ -283,14 +314,29 @@ export class CreateIssueUseCaseImpl implements CreateIssueUseCase {
   private buildCreateIssueRequest(
     request: CreateIssueUseCaseRequest,
   ): CreateIssueRequest {
-    const issueData: CreateIssueRequest = {
-      projectKey: request.projectKey,
+    const fields: CreateIssueRequest["fields"] = {
+      project: {
+        key: request.projectKey,
+      },
       summary: request.summary,
-      issueType: request.issueType || "Task",
-      description: request.description,
-      customFields: request.customFields,
+      issuetype: {
+        name: request.issueType || "Task",
+      },
     };
 
-    return issueData;
+    // Convert description to ADF format if provided
+    if (request.description) {
+      const adfDescription = ensureADFFormat(request.description);
+      if (adfDescription) {
+        fields.description = adfDescription;
+      }
+    }
+
+    // Add custom fields if provided
+    if (request.customFields) {
+      Object.assign(fields, request.customFields);
+    }
+
+    return { fields };
   }
 }

@@ -5,8 +5,8 @@
  */
 
 import { JiraApiError } from "@features/jira/client/errors";
+import type { Issue } from "../models";
 import type { IssueRepository } from "../repositories";
-import type { Issue } from "../repositories/issue.models";
 
 /**
  * Request parameters for get issue use case
@@ -58,7 +58,7 @@ export class GetIssueUseCaseImpl implements GetIssueUseCase {
       if (error instanceof Error) {
         throw JiraApiError.withStatusCode(
           `Failed to get issue details: ${error.message}`,
-          400
+          400,
         );
       }
       throw error;

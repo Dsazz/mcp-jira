@@ -22,8 +22,19 @@
       "@core/*": ["src/core/*"],
       "@features/*": ["src/features/*"],
       "@test/*": ["src/test/*"]
-    }
+    },
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "include": [
+    "src/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage"
+  ]
 }

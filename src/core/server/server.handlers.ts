@@ -1,10 +1,10 @@
-import { logger } from "@core/logging";
 /**
  * Server Handlers
  *
  * Error and signal handlers for the MCP server
  */
 import { z } from "zod";
+import { logger } from "../logging";
 
 /**
  * Server cleanup function schema

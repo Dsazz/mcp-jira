@@ -4,15 +4,13 @@
 import { mock } from "bun:test";
 import type { Comment } from "@features/jira/issues/models/comment.models";
 import type { Issue } from "@features/jira/issues/models/issue.models";
-import type { Transition } from "@features/jira/issues/models/issue.types";
-import type { WorklogEntry } from "@features/jira/issues/models/worklog.types";
-import type { 
-  IssueCommentRepository, 
+import type {
+  IssueCommentRepository,
   IssueRepository,
   IssueSearchRepository,
   IssueTransitionRepository,
-  WorklogRepository
-} from "@features/jira/shared/repositories";
+  WorklogRepository,
+} from "@features/jira/issues/repositories";
 
 /**
  * Creates a mock issue repository
@@ -74,21 +72,16 @@ export function createMockIssue(overrides: Partial<Issue> = {}): Issue {
       summary: "Test Issue",
       description: "Test Description",
       issuetype: {
-        id: "10001",
         name: "Task",
-        iconUrl: "https://test.atlassian.net/secure/viewavatar?size=medium&avatarId=10318&avatarType=issuetype",
-        self: "https://test.atlassian.net/rest/api/3/issuetype/10001"
-      },
-      project: {
-        id: "10000",
-        key: "TEST",
-        name: "Test Project",
-        self: "https://test.atlassian.net/rest/api/3/project/10000"
+        iconUrl:
+          "https://test.atlassian.net/secure/viewavatar?size=medium&avatarId=10318&avatarType=issuetype",
       },
       status: {
-        id: "10000",
         name: "To Do",
-        self: "https://test.atlassian.net/rest/api/3/status/10000"
+        statusCategory: {
+          name: "To Do",
+          colorName: "blue-gray",
+        },
       },
       creator: {
         accountId: "123456:abcdef",
@@ -96,7 +89,7 @@ export function createMockIssue(overrides: Partial<Issue> = {}): Issue {
         active: true,
         accountType: "atlassian",
         avatarUrls: {},
-        self: "https://test.atlassian.net/rest/api/3/user?accountId=123456:abcdef"
+        self: "https://test.atlassian.net/rest/api/3/user?accountId=123456:abcdef",
       },
       reporter: {
         accountId: "123456:abcdef",
@@ -104,7 +97,7 @@ export function createMockIssue(overrides: Partial<Issue> = {}): Issue {
         active: true,
         accountType: "atlassian",
         avatarUrls: {},
-        self: "https://test.atlassian.net/rest/api/3/user?accountId=123456:abcdef"
+        self: "https://test.atlassian.net/rest/api/3/user?accountId=123456:abcdef",
       },
       assignee: {
         accountId: "123456:abcdef",
@@ -112,13 +105,13 @@ export function createMockIssue(overrides: Partial<Issue> = {}): Issue {
         active: true,
         accountType: "atlassian",
         avatarUrls: {},
-        self: "https://test.atlassian.net/rest/api/3/user?accountId=123456:abcdef"
+        self: "https://test.atlassian.net/rest/api/3/user?accountId=123456:abcdef",
       },
       created: "2023-01-01T00:00:00.000Z",
       updated: "2023-01-01T00:00:00.000Z",
-      ...overrides.fields
+      ...overrides.fields,
     },
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -134,10 +127,10 @@ export function createMockComment(overrides: Partial<Comment> = {}): Comment {
       displayName: "Test User",
       active: true,
       accountType: "atlassian",
-      avatarUrls: {}
+      avatarUrls: {},
     },
     created: "2023-01-01T00:00:00.000Z",
     updated: "2023-01-01T00:00:00.000Z",
-    ...overrides
+    ...overrides,
   };
 }

@@ -10,7 +10,7 @@ import type { Issue } from "@features/jira/issues/models/issue.models";
 export enum SprintState {
   FUTURE = "future",
   ACTIVE = "active",
-  CLOSED = "closed"
+  CLOSED = "closed",
 }
 
 /**
@@ -64,17 +64,17 @@ export interface GetSprintsOptions {
    * ID of the board to get sprints from
    */
   boardId: number;
-  
+
   /**
    * State of the sprints to filter by
    */
   state?: SprintState | string;
-  
+
   /**
    * Pagination start index
    */
   startAt?: number;
-  
+
   /**
    * Maximum number of results to return
    */

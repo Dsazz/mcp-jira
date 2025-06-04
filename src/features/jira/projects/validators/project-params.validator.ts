@@ -6,7 +6,7 @@
 
 import { formatZodError } from "@core/utils/validation";
 import { z } from "zod";
-import { JiraApiError } from "@features/jira/client/errors";
+import { ProjectParamsValidationError } from "./errors";
 
 /**
  * Schema for getting projects parameters
@@ -115,7 +115,7 @@ export class ProjectParamsValidatorImpl implements ProjectParamsValidator {
    *
    * @param params - Parameters to validate
    * @returns Validated parameters
-   * @throws JiraApiError - If validation fails
+   * @throws ProjectParamsValidationError - If validation fails
    */
   public validateGetProjectsParams(
     params: GetProjectsParams,
@@ -126,8 +126,7 @@ export class ProjectParamsValidatorImpl implements ProjectParamsValidator {
       const errorMessage = `Invalid project retrieval parameters: ${formatZodError(
         result.error,
       )}`;
-      // TODO: Validators must have specific errors
-      throw JiraApiError.withStatusCode(errorMessage, 400);
+      throw new ProjectParamsValidationError(errorMessage, { params });
     }
 
     return result.data;
@@ -138,7 +137,7 @@ export class ProjectParamsValidatorImpl implements ProjectParamsValidator {
    *
    * @param params - Parameters to validate
    * @returns Validated parameters
-   * @throws JiraApiError - If validation fails
+   * @throws ProjectParamsValidationError - If validation fails
    */
   public validateGetProjectParams(params: GetProjectParams): GetProjectParams {
     const result = getProjectParamsSchema.safeParse(params);
@@ -147,8 +146,7 @@ export class ProjectParamsValidatorImpl implements ProjectParamsValidator {
       const errorMessage = `Invalid project parameter: ${formatZodError(
         result.error,
       )}`;
-      // TODO: Validators must have specific errors
-      throw JiraApiError.withStatusCode(errorMessage, 400);
+      throw new ProjectParamsValidationError(errorMessage, { params });
     }
 
     return result.data;

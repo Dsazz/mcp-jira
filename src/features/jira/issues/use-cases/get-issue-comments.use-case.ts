@@ -2,22 +2,35 @@
  * Get Issue Comments Use Case
  */
 
-import type { IssueCommentRepository } from "../repositories";
 import type { Comment, GetCommentsOptions } from "../models/comment.models";
-import type { IssueCommentValidator } from "../validators";
+import type { IssueCommentRepository } from "../repositories";
+import type {
+  GetIssueCommentsParams,
+  IssueCommentValidator,
+} from "../validators";
 
 export interface GetIssueCommentsUseCase {
-  execute(options: GetCommentsOptions): Promise<Comment[]>;
+  execute(params: GetIssueCommentsParams): Promise<Comment[]>;
 }
 
 export class GetIssueCommentsUseCaseImpl implements GetIssueCommentsUseCase {
   constructor(
     private readonly commentRepository: IssueCommentRepository,
-    private readonly validator: IssueCommentValidator
+    private readonly validator: IssueCommentValidator,
   ) {}
 
-  async execute(options: GetCommentsOptions): Promise<Comment[]> {
-    this.validator.validateGetComments(options);
-    return this.commentRepository.getComments(options);
+  async execute(params: GetIssueCommentsParams): Promise<Comment[]> {
+    const validatedParams = this.validator.validateGetCommentsParams(params);
+    // Convert to repository format
+    const options = {
+      issueKey: validatedParams.issueKey,
+      maxResults: validatedParams.maxComments,
+      startAt: 0,
+      orderBy: validatedParams.orderBy,
+    } as GetCommentsOptions;
+    return this.commentRepository.getIssueComments(
+      validatedParams.issueKey,
+      options,
+    );
   }
 }

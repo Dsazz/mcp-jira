@@ -28,4 +28,4 @@ export class IssueTransitionValidationError extends ValidationError {
     super(message, context);
     this.name = "IssueTransitionValidationError";
   }
-} 
+}

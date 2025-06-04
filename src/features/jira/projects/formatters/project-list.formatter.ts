@@ -5,6 +5,7 @@
  * filtering details, and professional presentation
  */
 import type { Project } from "../models";
+import { ProjectDetailsBuilder } from "./project-details.builder";
 
 /**
  * Context information for project list formatting
@@ -88,84 +89,35 @@ export class ProjectListFormatter {
   }
 
   /**
-   * Format a single project with comprehensive details
+   * Format a single project with comprehensive details using ProjectDetailsBuilder
    */
   private formatProject(project: Project, index: number): string {
     const sections = [];
+    const builder = new ProjectDetailsBuilder(project);
 
     // Project header with key and name
     sections.push(`## ${index}. **${project.key}** - ${project.name}`);
 
-    // Project type and privacy
-    const badges = [];
-    if (project.projectTypeKey) {
-      badges.push(`\`${project.projectTypeKey}\``);
-    }
-    if (project.isPrivate) {
-      badges.push("`🔒 Private`");
-    }
-    if (project.simplified) {
-      badges.push("`⚡ Simplified`");
-    }
-
+    // Project badges
+    const badges = builder.buildBadges();
     if (badges.length > 0) {
       sections.push(badges.join(" "));
     }
 
     // Description
-    if (project.description) {
-      sections.push(`*${project.description}*`);
+    const description = builder.getDescription();
+    if (description) {
+      sections.push(`*${description}*`);
     }
 
     // Project details
-    const details = [];
-
-    if (project.lead) {
-      details.push(`**Lead:** ${project.lead.displayName}`);
-    }
-
-    if (project.projectCategory) {
-      details.push(`**Category:** ${project.projectCategory.name}`);
-    }
-
-    if (project.components && project.components.length > 0) {
-      const componentCount = project.components.length;
-      details.push(
-        `**Components:** ${componentCount} component${componentCount !== 1 ? "s" : ""}`,
-      );
-    }
-
-    if (project.versions && project.versions.length > 0) {
-      const versionCount = project.versions.length;
-      const releasedCount = project.versions.filter((v) => v.released).length;
-      details.push(
-        `**Versions:** ${versionCount} total (${releasedCount} released)`,
-      );
-    }
-
-    if (project.issueTypes && project.issueTypes.length > 0) {
-      const issueTypeNames = project.issueTypes
-        .slice(0, 3)
-        .map((it) => it.name);
-      const remaining = project.issueTypes.length - 3;
-      let issueTypesText = `**Issue Types:** ${issueTypeNames.join(", ")}`;
-      if (remaining > 0) {
-        issueTypesText += ` (+${remaining} more)`;
-      }
-      details.push(issueTypesText);
-    }
-
+    const details = builder.buildDetails();
     if (details.length > 0) {
       sections.push(details.join(" • "));
     }
 
     // Quick actions
-    const actions = [
-      `[View Project](${this.getProjectUrl(project.key)})`,
-      `[Browse Issues](${this.getProjectIssuesUrl(project.key)})`,
-      `[Project Settings](${this.getProjectSettingsUrl(project.key)})`,
-    ];
-
+    const actions = builder.buildQuickActions();
     sections.push(`**Quick Actions:** ${actions.join(" | ")}`);
 
     return sections.join("\n");
@@ -237,26 +189,5 @@ export class ProjectListFormatter {
       "- `jira_get_projects recent=10` - Show recently accessed projects";
 
     return message;
-  }
-
-  /**
-   * Generate project URL for quick access
-   */
-  private getProjectUrl(projectKey: string): string {
-    return `#jira-project-${projectKey}`;
-  }
-
-  /**
-   * Generate project issues URL for quick access
-   */
-  private getProjectIssuesUrl(projectKey: string): string {
-    return `#jira-issues-${projectKey}`;
-  }
-
-  /**
-   * Generate project settings URL for quick access
-   */
-  private getProjectSettingsUrl(projectKey: string): string {
-    return `#jira-settings-${projectKey}`;
   }
 }

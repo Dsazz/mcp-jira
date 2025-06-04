@@ -1,4 +1,3 @@
-import { parseADF } from "@features/jira/shared/parsers/adf.parser";
 /**
  * Comments Formatter
  *
@@ -6,6 +5,7 @@ import { parseADF } from "@features/jira/shared/parsers/adf.parser";
  */
 import type { Comment } from "@features/jira/issues/models/comment.models";
 import type { Formatter } from "@features/jira/shared";
+import { parseADF } from "@features/jira/shared/parsers/adf.parser";
 
 /**
  * Interface for comments formatting context
@@ -21,7 +21,8 @@ export interface CommentsContext {
  * Implements the Formatter interface for Comment arrays with context
  */
 export class CommentsFormatter
-  implements Formatter<{ comments: Comment[]; context: CommentsContext }, string>
+  implements
+    Formatter<{ comments: Comment[]; context: CommentsContext }, string>
 {
   /**
    * Format comments array to structured markdown
@@ -38,7 +39,9 @@ export class CommentsFormatter
 
     // Add summary line with total and latest info
     const latestComment = comments[comments.length - 1];
-    const latestDate = latestComment ? this.formatDate(latestComment.created) : "";
+    const latestDate = latestComment
+      ? this.formatDate(latestComment.created)
+      : "";
 
     markdown += `**Total:** ${context.totalComments} comment${context.totalComments !== 1 ? "s" : ""}`;
     if (context.maxDisplayed && context.maxDisplayed < context.totalComments) {

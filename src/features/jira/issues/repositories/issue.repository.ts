@@ -2,8 +2,7 @@ import { logger } from "@core/logging";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
 import type { IssueResponse } from "@features/jira/client/responses/issue.responses";
 import type { CreateIssueRequest } from "@features/jira/issues/use-cases";
-import type { Issue } from "./issue.models";
-import type { IssueUpdateRequest } from "./issue.types";
+import type { Issue, IssueUpdateRequest } from "../models";
 
 /**
  * Repository interface for core issue CRUD operations
@@ -49,9 +48,12 @@ export class IssueRepositoryImpl implements IssueRepository {
    * Create a new issue with the provided request data
    */
   async createIssue(request: CreateIssueRequest): Promise<Issue> {
-    this.logger.debug(`Creating issue in project: ${request.projectKey}`, {
-      prefix: "JIRA:IssueRepository",
-    });
+    this.logger.debug(
+      `Creating issue in project: ${request.fields.project.key}`,
+      {
+        prefix: "JIRA:IssueRepository",
+      },
+    );
 
     const response = await this.httpClient.sendRequest<{
       key: string;

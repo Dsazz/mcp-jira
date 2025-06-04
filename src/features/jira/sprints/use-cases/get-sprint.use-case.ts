@@ -5,8 +5,8 @@
  */
 
 import { JiraApiError, JiraNotFoundError } from "@features/jira/client/errors";
-import type { SprintRepository } from "../repositories/sprint.repository";
 import type { Sprint } from "../models";
+import type { SprintRepository } from "../repositories/sprint.repository";
 import type { GetSprintParams } from "../validators/sprint.validator";
 
 /**
@@ -32,7 +32,7 @@ export class GetSprintUseCaseImpl implements GetSprintUseCase {
    * @param sprintRepository - Repository for sprint operations
    */
   constructor(private readonly sprintRepository: SprintRepository) {}
-  
+
   /**
    * Execute the get sprint use case
    *
@@ -46,17 +46,22 @@ export class GetSprintUseCaseImpl implements GetSprintUseCase {
     } catch (error) {
       // Enhance error with more context
       if (error instanceof Error) {
-        if (error.message.includes("does not exist") || error.message.includes("not found")) {
-          throw new JiraNotFoundError("Sprint", String(params.sprintId), { sprintId: params.sprintId });
+        if (
+          error.message.includes("does not exist") ||
+          error.message.includes("not found")
+        ) {
+          throw new JiraNotFoundError("Sprint", String(params.sprintId), {
+            sprintId: params.sprintId,
+          });
         }
-        
+
         throw JiraApiError.withCode(
-          `Failed to get sprint: ${error.message}`, 
-          "JIRA_SPRINT_RETRIEVAL_ERROR", 
-          { sprintId: params.sprintId }
+          `Failed to get sprint: ${error.message}`,
+          "JIRA_SPRINT_RETRIEVAL_ERROR",
+          { sprintId: params.sprintId },
         );
       }
       throw error;
     }
   }
-} 
+}

@@ -11,8 +11,12 @@ export interface GetProjectsOptions {
   orderBy?: string;
   query?: string;
   typeKey?: string;
-  categoryId?: string;
+  categoryId?: number;
   searchBy?: string;
+  searchQuery?: string;
+  recent?: number;
+  expand?: string[];
+  properties?: string[];
 }
 
 /**

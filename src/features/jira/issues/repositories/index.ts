@@ -2,12 +2,9 @@
  * Issue repositories exports
  */
 
-import type { Comment, GetCommentsOptions } from "../models/comment.models";
-import { IssueSearchRepositoryImpl } from "./issue-search.repository";
-
-export interface IssueCommentRepository {
-  getComments(options: GetCommentsOptions): Promise<Comment[]>;
-}
-
-export { IssueSearchRepositoryImpl };
-export type { IssueSearchRepository } from "./issue-search.repository";
+// Repository interfaces and implementations
+export * from "./issue.repository";
+export * from "./issue-search.repository";
+export * from "./issue-comment.repository";
+export * from "./issue-transition.repository";
+export * from "./worklog.repository";

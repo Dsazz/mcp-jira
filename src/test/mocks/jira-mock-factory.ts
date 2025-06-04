@@ -5,11 +5,14 @@
  * Provides consistent test data across all test suites
  */
 
-import type { ADFNode } from "@features/jira/shared/parsers/adf.parser";
 import type { Board } from "@features/jira/boards/models/board.models";
-import type { Issue } from "@features/jira/issues/models/issue.models";
 import type { IssueSearchResult } from "@features/jira/issues/models/issue-search.models";
-import type { Sprint } from "@features/jira/sprints/models/sprint.models";
+import type { Issue } from "@features/jira/issues/models/issue.models";
+import type { ADFNode } from "@features/jira/shared/parsers/adf.parser";
+import {
+  type Sprint,
+  SprintState,
+} from "@features/jira/sprints/models/sprint.models";
 import type { User } from "@features/jira/users/models/user.models";
 
 export interface ADFDocument extends ADFNode {
@@ -237,7 +240,7 @@ function buggyFunction() {
     const defaults: Sprint = {
       id: sprintId,
       self: `https://company.atlassian.net/rest/agile/1.0/sprint/${sprintId}`,
-      state: "active",
+      state: SprintState.ACTIVE,
       name: `Sprint ${sprintId}`,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
@@ -285,7 +288,9 @@ function buggyFunction() {
     return { ...defaults, ...overrides };
   }
 
-  createMockSearchResult(overrides: Partial<IssueSearchResult> = {}): IssueSearchResult {
+  createMockSearchResult(
+    overrides: Partial<IssueSearchResult> = {},
+  ): IssueSearchResult {
     const issues = Array.from({ length: 5 }, () => this.createMockIssue());
     const defaults: IssueSearchResult = {
       startAt: 0,
