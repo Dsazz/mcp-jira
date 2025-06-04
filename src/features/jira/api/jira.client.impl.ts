@@ -372,7 +372,7 @@ export class JiraClient implements JiraApiClient {
       }>({
         endpoint: "mypermissions",
         method: "GET",
-        queryParams: { projectKey },
+        queryParams: { projectKey, permissions: "CREATE_ISSUES" },
       });
 
       return permissions.permissions?.CREATE_ISSUES?.havePermission || false;
