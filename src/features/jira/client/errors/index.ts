@@ -35,24 +35,33 @@ export {
 import { JiraAuthenticationError } from "./auth.error";
 export { JiraAuthenticationError };
 
-// Re-export validators for backward compatibility
+// Import domain-specific validation errors
 import {
-  BoardIdValidationError,
-  BoardParamsValidationError,
-  CommentIdValidationError,
-  CommentParamsValidationError,
   IssueCreateParamsValidationError,
   IssueCreationError,
   IssueTransitionValidationError,
   IssueTypeValidationError,
   IssueUpdateParamsValidationError,
-  ProjectValidationError,
-  SprintIdValidationError,
-  SprintParamsValidationError,
   WorklogIdValidationError,
   WorklogParamsValidationError,
   WorklogTimeFormatValidationError,
-} from "../../validators/errors";
+  CommentIdValidationError,
+  CommentParamsValidationError,
+} from "@features/jira/issues/validators/errors";
+
+import {
+  BoardIdValidationError,
+  BoardParamsValidationError,
+} from "@features/jira/boards/validators/errors";
+
+import {
+  ProjectValidationError,
+} from "@features/jira/projects/validators/errors";
+
+import {
+  SprintIdValidationError,
+  SprintParamsValidationError,
+} from "@features/jira/sprints/validators/errors";
 
 export {
   // For backward compatibility, we re-export all validator errors

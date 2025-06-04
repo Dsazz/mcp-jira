@@ -10,7 +10,7 @@ import {
   JiraPermissionError,
 } from "@features/jira/client/errors";
 import { GetAssignedIssuesHandler } from "@features/jira/tools/handlers/get-assigned-issues.handler";
-import type { GetAssignedIssuesUseCase } from "@features/jira/use-cases";
+import type { GetAssignedIssuesUseCase } from "@features/jira/issues/use-cases";
 import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 

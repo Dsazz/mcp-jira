@@ -10,51 +10,81 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { JiraConfig } from "./client/config";
 import { JiraHttpClient } from "./client/http/jira.http-client.impl";
 import {
-  BoardRepositoryImpl,
-  IssueCommentRepositoryImpl,
+  issueKeySchema,
+  getIssueCommentsSchema,
+  createIssueParamsSchema,
+  updateIssueParamsSchema,
+  searchJiraIssuesBaseSchema,
   IssueRepositoryImpl,
   IssueSearchRepositoryImpl,
+  IssueCommentRepositoryImpl,
   IssueTransitionRepositoryImpl,
-  ProjectRepositoryImpl,
-  SprintRepositoryImpl,
-  UserProfileRepositoryImpl,
   WorklogRepositoryImpl,
-} from "./repositories";
-import { type JiraTools, createJiraTools } from "./tools";
-
-import {
-  BoardValidatorImpl,
   IssueCommentValidatorImpl,
   IssueParamsValidatorImpl,
-  ProjectParamsValidatorImpl,
-  ProjectPermissionCheckerImpl,
-  ProjectValidatorImpl,
-  SprintValidatorImpl,
-  getBoardsParamsSchema,
-  getIssueCommentsSchema,
-  getProjectsParamsSchema,
-  getSprintsParamsSchema,
-  issueKeySchema,
-} from "@features/jira/validators";
-
-import {
-  createIssueParamsSchema,
-  searchJiraIssuesBaseSchema,
-  updateIssueParamsSchema,
-} from "@features/jira/use-cases";
-
-// Import use case implementations
-import {
   CreateIssueUseCaseImpl,
-  GetAssignedIssuesUseCaseImpl,
-  GetBoardsUseCaseImpl,
+  UpdateIssueUseCaseImpl,
+  SearchIssuesUseCaseImpl,
   GetIssueCommentsUseCaseImpl,
   GetIssueUseCaseImpl,
+  GetAssignedIssuesUseCaseImpl,
+} from "./issues";
+import {
+  getProjectsParamsSchema,
   GetProjectsUseCaseImpl,
+  ProjectParamsValidatorImpl,
+  ProjectPermissionRepositoryImpl,
+  ProjectRepositoryImpl,
+  ProjectValidatorImpl,
+} from "./projects";
+import {
+  BoardRepositoryImpl,
+  BoardValidatorImpl,
+  getBoardsParamsSchema,
+  GetBoardsUseCaseImpl,
+} from "./boards";
+import {
+  getSprintsParamsSchema,
   GetSprintsUseCaseImpl,
-  SearchIssuesUseCaseImpl,
-  UpdateIssueUseCaseImpl,
-} from "./use-cases";
+  SprintRepositoryImpl,
+  SprintValidatorImpl,
+} from "./sprints";
+import { UserProfileRepositoryImpl } from "./users";
+// import { type JiraTools, createJiraTools } from "./tools";
+
+// import {
+//   BoardValidatorImpl,
+//   IssueCommentValidatorImpl,
+//   IssueParamsValidatorImpl,
+//   ProjectParamsValidatorImpl,
+//   ProjectPermissionCheckerImpl,
+//   ProjectValidatorImpl,
+//   SprintValidatorImpl,
+//   getBoardsParamsSchema,
+//   getIssueCommentsSchema,
+//   getProjectsParamsSchema,
+//   getSprintsParamsSchema,
+//   issueKeySchema,
+// } from "@features/jira/issues/validators";
+
+// import {
+//   createIssueParamsSchema,
+//   searchJiraIssuesBaseSchema,
+//   updateIssueParamsSchema,
+// } from "@features/jira/issues/use-cases";
+
+// Import use case implementations
+// import {
+//   CreateIssueUseCaseImpl,
+//   GetAssignedIssuesUseCaseImpl,
+//   GetBoardsUseCaseImpl,
+//   GetIssueCommentsUseCaseImpl,
+//   GetIssueUseCaseImpl,
+//   GetProjectsUseCaseImpl,
+//   GetSprintsUseCaseImpl,
+//   SearchIssuesUseCaseImpl,
+//   UpdateIssueUseCaseImpl,
+// } from "./use-cases";
 
 /**
  * Tool configuration interface
@@ -191,7 +221,9 @@ export function createJiraToolsWithDI(config: JiraConfig): JiraTools {
 
   // Create validators
   const projectValidator = new ProjectValidatorImpl(httpClient);
-  const projectPermissionChecker = new ProjectPermissionCheckerImpl(httpClient);
+  const projectPermissionRepository = new ProjectPermissionRepositoryImpl(
+    httpClient,
+  );
   const boardValidator = new BoardValidatorImpl();
   const sprintValidator = new SprintValidatorImpl();
   const issueCommentValidator = new IssueCommentValidatorImpl();
@@ -202,14 +234,14 @@ export function createJiraToolsWithDI(config: JiraConfig): JiraTools {
   const createIssueUseCase = new CreateIssueUseCaseImpl(
     issueRepository,
     projectValidator,
-    projectPermissionChecker,
+    projectPermissionRepository,
   );
 
   const updateIssueUseCase = new UpdateIssueUseCaseImpl(
     issueRepository,
     issueTransitionRepository,
     worklogRepository,
-    projectPermissionChecker,
+    projectPermissionRepository,
   );
 
   const searchIssuesUseCase = new SearchIssuesUseCaseImpl(
@@ -222,6 +254,7 @@ export function createJiraToolsWithDI(config: JiraConfig): JiraTools {
 
   const getIssueCommentsUseCase = new GetIssueCommentsUseCaseImpl(
     issueCommentRepository,
+    issueParamsValidator,
   );
 
   const getProjectsUseCase = new GetProjectsUseCaseImpl(projectRepository);

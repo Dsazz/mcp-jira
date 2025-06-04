@@ -4,7 +4,7 @@
  */
 
 import { beforeEach, describe, expect, test } from "bun:test";
-import { IssueCreationFormatter } from "@features/jira/formatters/issue-creation.formatter";
+import { IssueCreationFormatter } from "@features/jira/issues/formatters/issue-creation.formatter";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

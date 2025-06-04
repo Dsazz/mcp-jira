@@ -1,125 +1,43 @@
 /**
- * Integration Test Utilities
- *
- * Provides utilities for integration testing with real repositories and mocked HTTP
+ * Integration test utilities
  */
-import type { HttpClient } from "@features/jira/client/http/jira.http.types";
-import {
-  BoardRepositoryImpl,
-  IssueCommentRepositoryImpl,
-  IssueRepositoryImpl,
-  IssueSearchRepositoryImpl,
-  ProjectRepositoryImpl,
-  SprintRepositoryImpl,
-  UserProfileRepositoryImpl,
-  WorklogRepositoryImpl,
-} from "@features/jira/repositories";
-import { mockHttp } from "@test/utils/mock-helpers";
+import { JiraHttpClientImpl } from "@features/jira/client/http/jira-http-client";
+import { BoardRepositoryImpl } from "@features/jira/boards/repositories/board.repository";
+import { IssueCommentRepositoryImpl } from "@features/jira/issues/repositories/issue-comment.repository";
+import { IssueRepositoryImpl } from "@features/jira/issues/repositories/issue.repository";
+import { IssueSearchRepositoryImpl } from "@features/jira/issues/repositories/issue-search.repository";
+import { ProjectRepositoryImpl } from "@features/jira/projects/repositories/project.repository";
+import { SprintRepositoryImpl } from "@features/jira/sprints/repositories/sprint.repository";
+import { UserProfileRepositoryImpl } from "@features/jira/users/repositories/user-profile.repository";
+import { WorklogRepositoryImpl } from "@features/jira/issues/repositories/worklog.repository";
 
 /**
- * Integration test environment with real repositories and mocked HTTP
+ * Creates a new JiraHttpClient for testing
  */
-export class IntegrationTestEnvironment {
-  private httpClient: HttpClient;
+export function createJiraHttpClient() {
+  return new JiraHttpClientImpl({
+    baseUrl: "https://your-domain.atlassian.net",
+    auth: {
+      username: "test@example.com",
+      apiToken: "test-token",
+    },
+  });
+}
 
-  /**
-   * Create integration test environment with mocked HTTP client
-   * but real repository implementations
-   */
-  constructor() {
-    // Create HTTP client that uses mocked fetch
-    this.httpClient = {
-      sendRequest: async (options) => {
-        const url =
-          typeof options.endpoint === "string"
-            ? options.endpoint.startsWith("/")
-              ? options.endpoint
-              : `/${options.endpoint}`
-            : "/unknown-endpoint";
-
-        try {
-          const response = await fetch(url);
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-          }
-
-          return response.json();
-        } catch (error) {
-          console.error(
-            `[IntegrationTest] Error sending request to ${url}:`,
-            error,
-          );
-          throw error;
-        }
-      },
-    };
-
-    // Ensure we have a clean mock environment
-    mockHttp.clearAllMocks();
-  }
-
-  /**
-   * Reset all mocks after tests
-   */
-  reset() {
-    mockHttp.clearAllMocks();
-  }
-
-  /**
-   * Create a real IssueCommentRepository with mocked HTTP
-   */
-  createIssueCommentRepository() {
-    return new IssueCommentRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real IssueRepository with mocked HTTP
-   */
-  createIssueRepository() {
-    return new IssueRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real ProjectRepository with mocked HTTP
-   */
-  createProjectRepository() {
-    return new ProjectRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real BoardRepository with mocked HTTP
-   */
-  createBoardRepository() {
-    return new BoardRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real SprintRepository with mocked HTTP
-   */
-  createSprintRepository() {
-    return new SprintRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real IssueSearchRepository with mocked HTTP
-   */
-  createIssueSearchRepository() {
-    return new IssueSearchRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real WorklogRepository with mocked HTTP
-   */
-  createWorklogRepository() {
-    return new WorklogRepositoryImpl(this.httpClient);
-  }
-
-  /**
-   * Create a real UserProfileRepository with mocked HTTP
-   */
-  createUserProfileRepository() {
-    return new UserProfileRepositoryImpl(this.httpClient);
-  }
+/**
+ * Creates repository implementations for testing
+ */
+export function createRepositories() {
+  const client = createJiraHttpClient();
+  
+  return {
+    boardRepository: new BoardRepositoryImpl(client),
+    issueRepository: new IssueRepositoryImpl(client),
+    issueSearchRepository: new IssueSearchRepositoryImpl(client),
+    issueCommentRepository: new IssueCommentRepositoryImpl(client),
+    projectRepository: new ProjectRepositoryImpl(client),
+    sprintRepository: new SprintRepositoryImpl(client),
+    userProfileRepository: new UserProfileRepositoryImpl(client),
+    worklogRepository: new WorklogRepositoryImpl(client),
+  };
 }

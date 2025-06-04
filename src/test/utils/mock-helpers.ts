@@ -4,8 +4,8 @@
  */
 
 import { type Mock, mock } from "bun:test";
-import type { Issue } from "@features/jira/repositories/issue.models";
-import type { SearchResult } from "@features/jira/repositories/search.models";
+import type { Issue } from "@features/jira/issues/models/issue.models";
+import type { IssueSearchResult } from "@features/jira/issues/models/issue-search.models";
 import { mockFactory } from "../mocks/jira-mock-factory";
 
 interface MockResponse {
@@ -233,7 +233,7 @@ export const testDataBuilder = {
   /**
    * Create search result with specific count
    */
-  searchResultWithCount(count: number): SearchResult {
+  searchResultWithCount(count: number): IssueSearchResult {
     const issues = Array.from({ length: count }, (_, i) =>
       mockFactory.createMockIssue({
         key: `TEST-${i + 1}`,
@@ -253,7 +253,7 @@ export const testDataBuilder = {
   /**
    * Create empty search result
    */
-  emptySearchResult(): SearchResult {
+  emptySearchResult(): IssueSearchResult {
     return mockFactory.createMockSearchResult({
       total: 0,
       issues: [],

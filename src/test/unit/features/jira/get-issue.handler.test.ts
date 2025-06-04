@@ -10,10 +10,10 @@ import {
   JiraNotFoundError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import type { Issue } from "@features/jira/repositories/issue.models";
-import { GetIssueHandler } from "@features/jira/tools/handlers/get-issue.handler";
-import type { GetIssueUseCase } from "@features/jira/use-cases";
-import type { IssueParamsValidator } from "@features/jira/validators";
+import type { Issue } from "@features/jira/issues/models/issue.models";
+import { GetIssueHandler } from "@features/jira/issues/tools/get-issue.handler";
+import type { GetIssueUseCase } from "@features/jira/issues/use-cases";
+import type { IssueParamsValidator } from "@features/jira/issues/validators";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";

@@ -10,9 +10,9 @@ import {
   JiraPermissionError,
 } from "@features/jira/client/errors";
 import { GetSprintsHandler } from "@features/jira/tools/handlers/get-sprints.handler";
-import type { GetSprintsUseCase } from "@features/jira/use-cases";
-import type { SprintValidator } from "@features/jira/validators";
-import type { GetSprintsParams } from "@features/jira/validators";
+import type { GetSprintsUseCase } from "@features/jira/issues/use-cases";
+import type { SprintValidator } from "@features/jira/issues/validators";
+import type { GetSprintsParams } from "@features/jira/issues/validators";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

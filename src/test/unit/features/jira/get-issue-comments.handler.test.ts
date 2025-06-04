@@ -10,10 +10,10 @@ import {
   JiraNotFoundError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import type { Comment } from "@features/jira/repositories/comment.models";
-import { GetIssueCommentsHandler } from "@features/jira/tools/handlers/get-issue-comments.handler";
-import type { GetIssueCommentsUseCase } from "@features/jira/use-cases";
-import type { IssueCommentValidator } from "@features/jira/validators";
+import type { Comment } from "@features/jira/issues/models/comment.models";
+import { GetIssueCommentsHandler } from "@features/jira/issues/tools/get-issue-comments.handler";
+import type { GetIssueCommentsUseCase } from "@features/jira/issues/use-cases";
+import type { IssueCommentValidator } from "@features/jira/issues/validators";
 import { jiraApiMocks } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 

@@ -6,25 +6,25 @@
  */
 
 import type { McpResponse } from "@core/responses";
-import type { SearchResult } from "@features/jira/repositories/search.models";
+import type { IssueSearchResult } from "@features/jira/issues/models/issue-search.models";
 
 /**
  * Type guard to check if unknown data contains valid issues array
  */
-function hasValidIssues(data: unknown): data is SearchResult {
+function hasValidIssues(data: unknown): data is IssueSearchResult {
   return (
     typeof data === "object" &&
     data !== null &&
     "issues" in data &&
-    Array.isArray((data as SearchResult).issues)
+    Array.isArray((data as IssueSearchResult).issues)
   );
 }
 
 /**
  * Type guard to check if unknown data contains valid issues array with items
  */
-function hasValidIssuesWithItems(data: unknown): data is SearchResult {
-  return hasValidIssues(data) && (data as SearchResult).issues.length > 0;
+function hasValidIssuesWithItems(data: unknown): data is IssueSearchResult {
+  return hasValidIssues(data) && (data as IssueSearchResult).issues.length > 0;
 }
 
 /**
@@ -32,7 +32,7 @@ function hasValidIssuesWithItems(data: unknown): data is SearchResult {
  */
 export function isSuccessfulSearchResult(
   result: McpResponse<unknown>,
-): result is McpResponse<SearchResult> & { success: true; data: SearchResult } {
+): result is McpResponse<IssueSearchResult> & { success: true; data: IssueSearchResult } {
   return (
     result.success && result.data !== undefined && hasValidIssues(result.data)
   );
@@ -43,7 +43,7 @@ export function isSuccessfulSearchResult(
  */
 export function isSuccessfulSearchResultWithIssues(
   result: McpResponse<unknown>,
-): result is McpResponse<SearchResult> & { success: true; data: SearchResult } {
+): result is McpResponse<IssueSearchResult> & { success: true; data: IssueSearchResult } {
   return (
     result.success &&
     result.data !== undefined &&

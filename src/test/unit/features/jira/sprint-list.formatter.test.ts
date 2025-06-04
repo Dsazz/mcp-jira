@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { SprintListFormatter } from "@features/jira/formatters/sprint-list.formatter";
-import type { Sprint } from "@features/jira/repositories/sprint.types";
+import { SprintListFormatter } from "@features/jira/sprints/formatters/sprint-list.formatter";
+import type { Sprint } from "@features/jira/sprints/models/sprint.types";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

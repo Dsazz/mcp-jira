@@ -7,8 +7,8 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import {
   type ProjectListContext,
   ProjectListFormatter,
-} from "@features/jira/formatters/project-list.formatter";
-import type { Project } from "@features/jira/repositories/project.types";
+} from "@features/jira/projects/formatters/project-list.formatter";
+import type { Project } from "@features/jira/projects/models";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

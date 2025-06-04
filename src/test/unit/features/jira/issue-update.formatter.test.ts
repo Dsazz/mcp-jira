@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import {
   IssueUpdateFormatter,
   type UpdateContext,
-} from "@features/jira/formatters/issue-update.formatter";
+} from "@features/jira/issues/formatters/issue-update.formatter";
 import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 

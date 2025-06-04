@@ -9,8 +9,8 @@ import {
   JiraNotFoundError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import { CreateIssueHandler } from "@features/jira/tools/handlers/create-issue.handler";
-import type { CreateIssueParams } from "@features/jira/use-cases";
+import { CreateIssueHandler } from "@features/jira/issues/tools/create-issue.handler";
+import type { CreateIssueParams } from "@features/jira/issues/use-cases";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

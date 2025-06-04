@@ -5,7 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import type { SearchResult } from "@features/jira/repositories/search.models";
+import type { IssueSearchResult } from "@features/jira/issues";
 import { IntegrationTestEnvironment } from "@test/integration/integration-test-utils";
 import { mockHttp } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
@@ -29,7 +29,7 @@ describe("IssueSearchRepository Integration", () => {
   describe("searchIssues", () => {
     it("should search for issues with JQL", async () => {
       // Create mock search results
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 50,
         total: 2,
@@ -85,7 +85,7 @@ describe("IssueSearchRepository Integration", () => {
 
     it("should apply field filtering to search results", async () => {
       // Create mock search results with limited fields
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 50,
         total: 1,
@@ -121,7 +121,7 @@ describe("IssueSearchRepository Integration", () => {
 
     it("should limit search results based on maxResults", async () => {
       // Create mock search results
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 1,
         total: 10,
@@ -157,7 +157,7 @@ describe("IssueSearchRepository Integration", () => {
 
     it("should handle empty search results", async () => {
       // Create empty mock search results
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 50,
         total: 0,
@@ -196,7 +196,7 @@ describe("IssueSearchRepository Integration", () => {
   describe("getAssignedIssues", () => {
     it("should retrieve issues assigned to current user", async () => {
       // Create mock search results for assigned issues
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 50,
         total: 2,
@@ -246,7 +246,7 @@ describe("IssueSearchRepository Integration", () => {
 
     it("should filter fields for assigned issues", async () => {
       // Create mock search results with limited fields
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 50,
         total: 1,
@@ -300,7 +300,7 @@ describe("IssueSearchRepository Integration", () => {
   describe("getAssignedIssuesWithResponse", () => {
     it("should retrieve assigned issues with success response wrapper", async () => {
       // Create mock search results
-      const mockSearchResult: SearchResult = {
+      const mockSearchResult: IssueSearchResult = {
         startAt: 0,
         maxResults: 50,
         total: 1,

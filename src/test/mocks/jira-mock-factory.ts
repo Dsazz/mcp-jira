@@ -5,12 +5,12 @@
  * Provides consistent test data across all test suites
  */
 
-import type { ADFNode } from "@features/jira/parsers/adf.parser";
-import type { Board } from "@features/jira/repositories/board.types";
-import type { Issue } from "@features/jira/repositories/issue.models";
-import type { SearchResult } from "@features/jira/repositories/search.models";
-import type { Sprint } from "@features/jira/repositories/sprint.types";
-import type { User } from "@features/jira/repositories/user.models";
+import type { ADFNode } from "@features/jira/shared/parsers/adf.parser";
+import type { Board } from "@features/jira/boards/models/board.models";
+import type { Issue } from "@features/jira/issues/models/issue.models";
+import type { IssueSearchResult } from "@features/jira/issues/models/issue-search.models";
+import type { Sprint } from "@features/jira/sprints/models/sprint.models";
+import type { User } from "@features/jira/users/models/user.models";
 
 export interface ADFDocument extends ADFNode {
   version: number;
@@ -56,7 +56,7 @@ export interface MockScenario {
     issues?: Issue[];
     projects?: MockProject[];
     users?: User[];
-    searchResults?: SearchResult;
+    searchResults?: IssueSearchResult;
   };
 }
 
@@ -210,12 +210,12 @@ function buggyFunction() {
   createMockBoard(overrides: Partial<Board> = {}): Board {
     const boardId = Math.floor(Math.random() * 1000) + 1;
     const defaults: Board = {
-      id: boardId,
+      id: boardId.toString(),
       self: `https://company.atlassian.net/rest/agile/1.0/board/${boardId}`,
       name: "Test Board",
       type: "scrum",
       location: {
-        projectId: 10001,
+        projectId: "10001",
         projectKey: "TEST",
         projectName: "Test Project",
         projectTypeKey: "software",
@@ -285,9 +285,9 @@ function buggyFunction() {
     return { ...defaults, ...overrides };
   }
 
-  createMockSearchResult(overrides: Partial<SearchResult> = {}): SearchResult {
+  createMockSearchResult(overrides: Partial<IssueSearchResult> = {}): IssueSearchResult {
     const issues = Array.from({ length: 5 }, () => this.createMockIssue());
-    const defaults: SearchResult = {
+    const defaults: IssueSearchResult = {
       startAt: 0,
       maxResults: 50,
       total: issues.length,

@@ -5,9 +5,9 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import type { Issue } from "@features/jira/repositories/issue.models";
-import type { IssueUpdateRequest } from "@features/jira/repositories/issue.types";
-import type { CreateIssueRequest } from "@features/jira/use-cases";
+import type { Issue } from "@features/jira/issues/models/issue.models";
+import type { IssueUpdateRequest } from "@features/jira/issues/models/issue.types";
+import type { CreateIssueRequest } from "@features/jira/issues/use-cases";
 import { IntegrationTestEnvironment } from "@test/integration/integration-test-utils";
 import { mockHttp } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";

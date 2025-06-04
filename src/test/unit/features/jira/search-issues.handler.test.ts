@@ -9,7 +9,7 @@ import {
   JiraApiError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import { SearchIssuesHandler } from "@features/jira/tools/handlers/search-issues.handler";
+import { SearchIssuesHandler } from "@features/jira/issues/tools/search-issues.handler";
 import { jiraApiMocks, testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 

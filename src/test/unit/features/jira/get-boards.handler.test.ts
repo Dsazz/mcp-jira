@@ -9,10 +9,10 @@ import {
   JiraNotFoundError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import { GetBoardsHandler } from "@features/jira/tools/handlers/get-boards.handler";
-import type { GetBoardsUseCase } from "@features/jira/use-cases";
-import type { BoardValidator } from "@features/jira/validators";
-import type { GetBoardsParams } from "@features/jira/validators";
+import { GetBoardsHandler } from "@features/jira/boards/tools/get-boards.handler";
+import type { GetBoardsUseCase } from "@features/jira/issues/use-cases";
+import type { BoardValidator } from "@features/jira/issues/validators";
+import type { GetBoardsParams } from "@features/jira/issues/validators";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

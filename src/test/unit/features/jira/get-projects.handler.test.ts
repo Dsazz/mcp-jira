@@ -9,14 +9,13 @@ import {
   JiraApiError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import type { Project } from "@features/jira/repositories/project.types";
-import { GetProjectsHandler } from "@features/jira/tools/handlers/get-projects.handler";
-import type { GetProjectsUseCase } from "@features/jira/use-cases";
-import type { GetProjectsParams } from "@features/jira/validators";
-import type { ProjectParamsValidator } from "@features/jira/validators";
+import type { Project } from "@features/jira/projects/models";
+import { GetProjectsHandler } from "@features/jira/projects/tools/get-projects.handler";
+import type { GetProjectsUseCase } from "@features/jira/projects/use-cases/get-projects.use-case";
+import type { GetProjectsOptions } from "@features/jira/projects/models";
+import type { ProjectParamsValidator } from "@features/jira/projects/validators/project-params.validator";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
-import { jiraApiMocks } from "@test/utils/mock-helpers";
-import { RepositoryMockFactory } from "@test/utils/repository-test.utils";
+import { jiraApiMocks, RepositoryMockFactory } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 
 // Setup test environment

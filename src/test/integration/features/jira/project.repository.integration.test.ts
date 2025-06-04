@@ -9,7 +9,7 @@ import type {
   GetProjectsOptions,
   Project,
   ProjectPermissions,
-} from "@features/jira/repositories/project.types";
+} from "@features/jira/projects/models";
 import { IntegrationTestEnvironment } from "@test/integration/integration-test-utils";
 import { mockHttp } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";

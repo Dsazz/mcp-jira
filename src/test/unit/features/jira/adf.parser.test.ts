@@ -9,7 +9,7 @@ import {
   ADFToMarkdownParser,
   extractTextFromADF,
   parseADF,
-} from "@features/jira/parsers/adf.parser";
+} from "@features/jira/shared/parsers/adf.parser";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 

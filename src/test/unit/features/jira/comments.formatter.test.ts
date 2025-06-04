@@ -7,9 +7,9 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import {
   type CommentsContext,
   CommentsFormatter,
-} from "@features/jira/formatters/comments.formatter";
-import type { ADFDocument } from "@features/jira/parsers/adf.parser";
-import type { Comment } from "@features/jira/repositories/comment.models";
+} from "@features/jira/shared/formatters";
+import type { ADFDocument } from "@features/jira/shared/parsers/adf.parser";
+import type { Comment } from "@features/jira/issues/models/comment.models";
 import { setupTests } from "@test/utils/test-setup";
 
 // Setup test environment

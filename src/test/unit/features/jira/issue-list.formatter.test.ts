@@ -4,8 +4,8 @@
  */
 
 import { beforeEach, describe, expect, test } from "bun:test";
-import { IssueListFormatter } from "@features/jira/formatters/issue-list.formatter";
-import type { Issue } from "@features/jira/repositories/issue.models";
+import { IssueListFormatter } from "@features/jira/issues/formatters/issue-list.formatter";
+import type { Issue } from "@features/jira/issues/models/issue.models";
 import { testDataBuilder } from "@test/utils/mock-helpers";
 import { setupTests } from "@test/utils/test-setup";
 

@@ -10,9 +10,9 @@ import {
   JiraNotFoundError,
   JiraPermissionError,
 } from "@features/jira/client/errors";
-import { UpdateIssueHandler } from "@features/jira/tools/handlers/update-issue.handler";
-import { mockFactory } from "@test/mocks/jira-mock-factory";
+import { UpdateIssueHandler } from "@features/jira/issues/tools/update-issue.handler";
 import { setupTests } from "@test/utils/test-setup";
+import { mockFactory } from "@test/mocks/jira-mock-factory";
 
 // Setup test environment
 setupTests();

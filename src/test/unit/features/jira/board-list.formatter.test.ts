@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { BoardListFormatter } from "@features/jira/formatters/board-list.formatter";
-import type { Board } from "@features/jira/repositories/board.types";
+import { BoardListFormatter } from "@features/jira/boards/formatters/board-list.formatter";
+import type { Board } from "@features/jira/boards/models/board.types";
 import { mockFactory } from "@test/mocks/jira-mock-factory";
 import { setupTests } from "@test/utils/test-setup";
 
