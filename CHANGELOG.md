@@ -13,6 +13,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced performance optimizations
 - Advanced JIRA automation workflows
 
+## [0.5.3] - 2025-06-05
+
+### 🐛 Critical Bug Fixes
+
+- **🚨 JIRA Worklog Description Format Fixed**: Resolved critical bug where worklog creation failed when descriptions were provided
+  - **Issue**: JIRA API requires worklog comments to be in ADF (Atlassian Document Format) instead of plain strings
+  - **Error**: Worklog creation worked without description but failed when description was sent as plain string
+  - **Fix**: Updated WorklogRepository to convert string comments to ADF format using existing `textToADF()` function
+  - **Impact**: Users can now successfully add worklog entries with descriptions/comments
+  - **Location**: `src/features/jira/issues/repositories/worklog.repository.ts`
+
+### 🔧 Technical Details
+
+- **Root Cause**: JIRA worklog API expects comments in ADF format, not plain text strings
+- **Solution**: Integrated existing ADF parser to convert string comments to proper ADF document structure
+- **ADF Format**: Converts plain text to `{"type":"doc","version":1,"content":[{"type":"paragraph","content":[{"type":"text","text":"..."}]}]}`
+- **Backward Compatibility**: Maintains full compatibility - string inputs automatically converted to ADF
+- **Methods Updated**: Both `addWorklog()` and `updateWorklog()` now handle ADF conversion
+
+### 🔍 User Impact
+
+- **Before**: Worklog creation failed with descriptions, forcing users to create worklogs without comments
+- **After**: Full worklog functionality with rich text descriptions working seamlessly
+- **API Consistency**: Worklog comments now properly display in JIRA UI as descriptions
+- **Developer Experience**: Transparent ADF conversion - developers can still use simple strings
+
 ## [0.5.2] - 2025-06-05
 
 ### 🐛 Critical Bug Fixes

@@ -1,5 +1,6 @@
 import { logger } from "@core/logging";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
+import { textToADF } from "@features/jira/shared/parsers/adf.parser";
 import type { WorklogEntry } from "../models";
 
 /**
@@ -51,7 +52,10 @@ export class WorklogRepositoryImpl implements WorklogRepository {
     };
 
     if (comment) {
-      body.comment = comment;
+      const adfComment = textToADF(comment);
+      if (adfComment) {
+        body.comment = adfComment;
+      }
     }
 
     if (started) {
@@ -115,7 +119,10 @@ export class WorklogRepositoryImpl implements WorklogRepository {
     };
 
     if (comment) {
-      body.comment = comment;
+      const adfComment = textToADF(comment);
+      if (adfComment) {
+        body.comment = adfComment;
+      }
     }
 
     const worklog = await this.httpClient.sendRequest<WorklogEntry>({

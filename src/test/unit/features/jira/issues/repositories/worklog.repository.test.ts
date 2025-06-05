@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, jest } from "bun:test";
 import type { HttpClient } from "@features/jira/client/http/jira.http.types";
 import type { WorklogEntry } from "@features/jira/issues/models";
 import { WorklogRepositoryImpl } from "@features/jira/issues/repositories/worklog.repository";
+import type { ADFDocument } from "@features/jira/shared/parsers/adf.parser";
 
 // Mock Factory for Worklog Repository Tests
 const WorklogRepositoryMockFactory = {
@@ -107,6 +108,21 @@ describe("WorklogRepositoryImpl", () => {
       const issueKey = "TEST-123";
       const timeSpent = "1h 30m";
       const comment = "Fixed critical bug in authentication";
+      const expectedADFComment: ADFDocument = {
+        type: "doc",
+        version: 1,
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: comment,
+              },
+            ],
+          },
+        ],
+      };
       const mockWorklog = WorklogRepositoryMockFactory.createMockWorklogEntry({
         timeSpent,
         comment,
@@ -124,7 +140,7 @@ describe("WorklogRepositoryImpl", () => {
         method: "POST",
         body: {
           timeSpent,
-          comment,
+          comment: expectedADFComment,
         },
       });
     });
@@ -135,6 +151,21 @@ describe("WorklogRepositoryImpl", () => {
       const timeSpent = "4h";
       const comment = "Implemented new feature";
       const started = "2023-01-01T09:00:00.000Z";
+      const expectedADFComment: ADFDocument = {
+        type: "doc",
+        version: 1,
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: comment,
+              },
+            ],
+          },
+        ],
+      };
       const mockWorklog = WorklogRepositoryMockFactory.createMockWorklogEntry({
         timeSpent,
         comment,
@@ -158,7 +189,7 @@ describe("WorklogRepositoryImpl", () => {
         method: "POST",
         body: {
           timeSpent,
-          comment,
+          comment: expectedADFComment,
           started,
         },
       });
@@ -192,6 +223,84 @@ describe("WorklogRepositoryImpl", () => {
         body: {
           timeSpent,
           started,
+        },
+      });
+    });
+
+    it("should add worklog with empty comment as null", async () => {
+      // Arrange
+      const issueKey = "TEST-EMPTY";
+      const timeSpent = "2h";
+      const comment = "";
+      const mockWorklog = WorklogRepositoryMockFactory.createMockWorklogEntry({
+        timeSpent,
+      });
+
+      (mockHttpClient.sendRequest as jest.Mock).mockResolvedValue(mockWorklog);
+
+      // Act
+      const result = await repository.addWorklog(issueKey, timeSpent, comment);
+
+      // Assert
+      expect(result).toEqual(mockWorklog);
+      expect(mockHttpClient.sendRequest).toHaveBeenCalledWith({
+        endpoint: `issue/${issueKey}/worklog`,
+        method: "POST",
+        body: {
+          timeSpent,
+          // Empty comment should not be included in body
+        },
+      });
+    });
+
+    it("should add worklog with multiline comment converted to ADF", async () => {
+      // Arrange
+      const issueKey = "TEST-MULTILINE";
+      const timeSpent = "3h";
+      const comment =
+        "Fixed bug in authentication\n\nAlso updated documentation";
+      const expectedADFComment: ADFDocument = {
+        type: "doc",
+        version: 1,
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Fixed bug in authentication",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Also updated documentation",
+              },
+            ],
+          },
+        ],
+      };
+      const mockWorklog = WorklogRepositoryMockFactory.createMockWorklogEntry({
+        timeSpent,
+        comment,
+      });
+
+      (mockHttpClient.sendRequest as jest.Mock).mockResolvedValue(mockWorklog);
+
+      // Act
+      const result = await repository.addWorklog(issueKey, timeSpent, comment);
+
+      // Assert
+      expect(result).toEqual(mockWorklog);
+      expect(mockHttpClient.sendRequest).toHaveBeenCalledWith({
+        endpoint: `issue/${issueKey}/worklog`,
+        method: "POST",
+        body: {
+          timeSpent,
+          comment: expectedADFComment,
         },
       });
     });
@@ -361,6 +470,21 @@ describe("WorklogRepositoryImpl", () => {
       const worklogId = "10002";
       const timeSpent = "2h 15m";
       const comment = "Updated work description";
+      const expectedADFComment: ADFDocument = {
+        type: "doc",
+        version: 1,
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: comment,
+              },
+            ],
+          },
+        ],
+      };
       const mockWorklog = WorklogRepositoryMockFactory.createMockWorklogEntry({
         id: worklogId,
         timeSpent,
@@ -384,7 +508,7 @@ describe("WorklogRepositoryImpl", () => {
         method: "PUT",
         body: {
           timeSpent,
-          comment,
+          comment: expectedADFComment,
         },
       });
     });
