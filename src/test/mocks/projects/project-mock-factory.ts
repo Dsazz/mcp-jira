@@ -6,6 +6,7 @@ import type {
   GetProjectsOptions,
   Project,
   ProjectPermissions,
+  ProjectSearchResponse,
 } from "@features/jira/projects/models";
 import type { ProjectRepository } from "@features/jira/projects/repositories";
 
@@ -62,4 +63,36 @@ export function createMockProjectList(count = 3): Project[] {
       style: "next-gen",
       isPrivate: false,
     }));
+}
+
+/**
+ * Creates a mock paginated project search response
+ */
+export function createMockProjectSearchResponse(
+  projects: Project[] = createMockProjectList(),
+  options: {
+    startAt?: number;
+    maxResults?: number;
+    total?: number;
+    isLast?: boolean;
+  } = {},
+): ProjectSearchResponse {
+  const {
+    startAt = 0,
+    maxResults = 50,
+    total = projects.length,
+    isLast = true,
+  } = options;
+
+  return {
+    self: "https://test.atlassian.net/rest/api/3/project/search",
+    nextPage: isLast
+      ? undefined
+      : `https://test.atlassian.net/rest/api/3/project/search?startAt=${startAt + maxResults}`,
+    maxResults,
+    startAt,
+    total,
+    isLast,
+    values: projects,
+  };
 }

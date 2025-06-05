@@ -4,6 +4,7 @@ import type {
   GetProjectsOptions,
   Project,
   ProjectPermissions,
+  ProjectSearchResponse,
 } from "../models";
 
 /**
@@ -70,11 +71,15 @@ export class ProjectRepositoryImpl implements ProjectRepository {
       queryParams.orderBy = options.orderBy;
     }
 
-    return this.httpClient.sendRequest<Project[]>({
+    // Get paginated response from JIRA API
+    const response = await this.httpClient.sendRequest<ProjectSearchResponse>({
       endpoint: "project/search",
       method: "GET",
       queryParams,
     });
+
+    // Extract and return the projects array from the paginated response
+    return response.values;
   }
 
   /**
@@ -128,10 +133,14 @@ export class ProjectRepositoryImpl implements ProjectRepository {
       maxResults,
     };
 
-    return this.httpClient.sendRequest<Project[]>({
+    // Get paginated response from JIRA API
+    const response = await this.httpClient.sendRequest<ProjectSearchResponse>({
       endpoint: "project/search",
       method: "GET",
       queryParams,
     });
+
+    // Extract and return the projects array from the paginated response
+    return response.values;
   }
 }
