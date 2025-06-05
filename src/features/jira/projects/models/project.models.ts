@@ -20,6 +20,24 @@ export interface GetProjectsOptions {
 }
 
 /**
+ * Generic paginated response structure from JIRA API
+ */
+export interface PaginatedResponse<T> {
+  self: string;
+  nextPage?: string;
+  maxResults: number;
+  startAt: number;
+  total: number;
+  isLast: boolean;
+  values: T[];
+}
+
+/**
+ * Project search response from JIRA API
+ */
+export interface ProjectSearchResponse extends PaginatedResponse<Project> {}
+
+/**
  * Project types for the JIRA projects domain
  */
 

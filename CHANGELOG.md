@@ -13,6 +13,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced performance optimizations
 - Advanced JIRA automation workflows
 
+## [0.5.1] - 2025-06-05
+
+### 🐛 Critical Bug Fixes
+
+- **🚨 JIRA Projects API Pagination Fixed**: Resolved `projects.map is not a function` error
+  - **Issue**: JIRA `/project/search` API returns paginated responses with `{values: [...]}` structure
+  - **Error**: Code expected direct arrays, causing `projects.map is not a function` when using `jira_get_projects`
+  - **Fix**: Updated ProjectRepository to properly extract `values` array from paginated responses
+  - **Impact**: Users can now successfully use `jira_get_projects` and `jira_get_projects searchQuery="..."` commands
+  - **Location**: `src/features/jira/projects/repositories/project.repository.ts`
+
+### 🔧 Technical Details
+
+- **Root Cause**: JIRA API pagination structure mismatch in projects repository
+- **Solution**: Added `PaginatedResponse<T>` and `ProjectSearchResponse` interfaces with proper value extraction
+- **Validation**: All 829 tests passing with comprehensive coverage across all domains
+- **Testing**: Enhanced mock factories and repository test coverage
+- **Compatibility**: Fully backward compatible with no breaking changes
+
+### 📋 Release Process
+
+- **Type**: Patch release (0.5.0 → 0.5.1)
+- **Priority**: High - resolves user-blocking issues
+- **Compatibility**: Fully backward compatible
+- **Dependencies**: No dependency changes required
+
 ## [0.5.0] - 2025-06-05
 
 ### 🆕 New Tools
