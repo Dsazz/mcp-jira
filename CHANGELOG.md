@@ -9,9 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 
-- Additional JIRA tools (projects, sprints, boards)
-- Enhanced error handling and logging
-- Performance optimizations
+- Additional JIRA worklog management features
+- Enhanced performance optimizations
+- Advanced JIRA automation workflows
+
+## [0.5.0] - 2025-06-05
+
+### 🆕 New Tools
+
+- **📝 Worklog Management**: Complete worklog functionality for time tracking
+  - `jira_add_worklog`: Add time entries to issues with comments and date specification
+  - `jira_get_worklogs`: Retrieve worklog entries with date filtering
+  - `jira_update_worklog`: Modify existing worklog entries
+  - `jira_delete_worklog`: Remove worklog entries
+- **👤 User Management**: Enhanced user operations
+  - `jira_get_current_user`: Get current authenticated user information
+
+### 🏗️ Architecture Overhaul
+
+- **Modular Design**: Complete code reorganization with domain-driven structure (issues, projects, boards, sprints, users, worklogs)
+- **Enhanced HTTP Client**: Rebuilt with dedicated utility classes for improved reliability and maintainability
+- **822+ Tests**: Comprehensive test coverage including 95+ new tests for HTTP client utilities
+
+### 🐛 Critical Fixes
+
+- **URL Construction Bug**: Fixed malformed JIRA API URLs that prevented proper communication with JIRA Cloud
+- **Enhanced Error Handling**: Improved error classification with actionable solutions
 
 ## [0.4.1] - 2025-06-04
 

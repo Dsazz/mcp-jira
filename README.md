@@ -18,22 +18,58 @@
 
 ## ✨ Features
 
-- 🎯 **Access JIRA Directly From Cursor**
+- 🎯 **Complete JIRA Integration Suite**
 
-  - Browse your assigned issues without leaving your IDE
-  - Get detailed issue information with formatted content
-  - Create local tasks from JIRA issues seamlessly
+  - **Issue Management**: Full CRUD operations for JIRA issues with comprehensive field support
+  - **Project & Board Discovery**: Browse projects, boards, and sprints with advanced filtering
+  - **Smart Search**: JQL and beginner-friendly search with rich formatting
+  - **Comment System**: Access and manage issue comments with progressive disclosure
 
-- 🔍 **Powerful Search Capabilities**
+- 🏗️ **Enterprise-Grade Architecture** _(New in v0.5.0)_
+
+  - **Modular Design**: Feature-based architecture with clear separation of concerns
+  - **Robust HTTP Client**: Refactored with dedicated utility classes for reliability
+  - **Comprehensive Testing**: 822+ tests ensuring stability and reliability
+  - **Type Safety**: Full TypeScript strict mode with enhanced error handling
+
+- 🔍 **Powerful Search & Discovery**
 
   - Search issues using JQL (JIRA Query Language) or beginner-friendly parameters
-  - Support for project filtering, status filtering, and advanced queries
-  - Rich markdown formatting with issue previews and direct links
+  - Project, board, and sprint discovery with metadata and filtering
+  - Rich markdown formatting with issue previews and direct navigation links
+  - Advanced comment retrieval with author filtering and date ranges
 
-- 📝 **Smart Issue Management**
-  - Retrieve detailed issue information with ADF parsing
-  - Access issue comments with advanced filtering options
-  - Convert JIRA issues into actionable local tasks
+- 📝 **Advanced Issue Management**
+  - Create, update, and transition issues with comprehensive field support
+  - Time tracking, worklog management, and custom field support
+  - ADF (Atlassian Document Format) parsing for rich content display
+  - Array operations for labels, components, and versions
+
+## 🆕 What's New in v0.5.0
+
+### 🏗️ Major Architecture Overhaul
+
+- **Complete code reorganization** with modular, domain-driven architecture
+- **HTTP client refactoring** with dedicated utility classes for improved reliability
+- **Critical bug fix** for malformed JIRA API URLs that prevented proper communication
+
+### 🧪 Enhanced Testing & Quality
+
+- **95+ new tests** added for HTTP client utilities and edge cases
+- **822 total tests** ensuring comprehensive coverage and stability
+- **Zero linting warnings** with enhanced Biome integration
+
+### 🔧 Technical Improvements
+
+- **Enhanced error handling** with better classification and actionable messages
+- **Improved logging** with structured debug information and performance monitoring
+- **Type safety enhancements** with strict TypeScript checking throughout
+
+### 🚀 Performance & Reliability
+
+- **Optimized HTTP requests** with better connection management
+- **Enhanced error recovery** with improved retry logic and timeout handling
+- **Backward compatibility** maintained - seamless upgrade from v0.4.x
 
 ## 🚀 Quick Start
 
@@ -112,6 +148,11 @@ JIRA_API_TOKEN=your-jira-api-token-here
 | `jira_get_projects`        | Retrieve and browse JIRA projects with filtering options          | See project parameters               | Markdown-formatted project list    |
 | `jira_get_boards`          | Get JIRA boards (Scrum/Kanban) with advanced filtering            | See board parameters                 | Markdown-formatted board list      |
 | `jira_get_sprints`         | Retrieve sprint information for agile project management          | See sprint parameters                | Markdown-formatted sprint list     |
+| `jira_add_worklog`         | Add time tracking entries to issues                               | See worklog parameters below         | Markdown-formatted worklog result  |
+| `jira_get_worklogs`        | Retrieve worklog entries for issues with date filtering           | See worklog parameters below         | Markdown-formatted worklog list    |
+| `jira_update_worklog`      | Update existing worklog entries                                   | See worklog parameters below         | Markdown-formatted update result   |
+| `jira_delete_worklog`      | Delete worklog entries from issues                                | See worklog parameters below         | Markdown-formatted deletion result |
+| `jira_get_current_user`    | Get current authenticated user information                        | None                                 | Markdown-formatted user details    |
 | `search_jira_issues`       | Search JIRA issues with JQL or helper parameters                  | See search parameters below          | Markdown-formatted search results  |
 
 #### Issue Creation Parameters
@@ -267,6 +308,73 @@ jira_get_sprints boardId:123 state:"active"
 
 # Get sprints with pagination
 jira_get_sprints boardId:123 maxResults:10 startAt:20
+```
+
+#### Worklog Parameters
+
+The worklog tools support comprehensive time tracking:
+
+**`jira_add_worklog` Parameters**:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+- `timeSpent`: String - Time spent in JIRA format (e.g., `"2h"`, `"1d 4h"`, `"30m"`)
+
+**Optional**:
+
+- `comment`: String - Comment describing the work done
+- `started`: String - When work started (ISO date format, defaults to now)
+- `visibility`: Object - Visibility settings (`{type: "group", value: "jira-developers"}`)
+
+**`jira_get_worklogs` Parameters**:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+
+**Optional**:
+
+- `startedAfter`: String - Filter worklogs started after this date (ISO format)
+- `startedBefore`: String - Filter worklogs started before this date (ISO format)
+
+**`jira_update_worklog` Parameters**:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+- `worklogId`: String - Worklog ID to update
+
+**Optional** (any combination):
+
+- `timeSpent`: String - Update time spent
+- `comment`: String - Update comment
+- `started`: String - Update start time
+
+**`jira_delete_worklog` Parameters**:
+
+**Required**:
+
+- `issueKey`: String - Issue key (e.g., `"PROJ-123"`)
+- `worklogId`: String - Worklog ID to delete
+
+**Examples**:
+
+```
+# Add worklog entry
+jira_add_worklog issueKey:"PROJ-123" timeSpent:"2h" comment:"Fixed authentication bug"
+
+# Get all worklogs for an issue
+jira_get_worklogs issueKey:"PROJ-123"
+
+# Get worklogs from last week
+jira_get_worklogs issueKey:"PROJ-123" startedAfter:"2025-05-29T00:00:00.000Z"
+
+# Update worklog
+jira_update_worklog issueKey:"PROJ-123" worklogId:"12345" timeSpent:"3h" comment:"Updated work description"
+
+# Delete worklog
+jira_delete_worklog issueKey:"PROJ-123" worklogId:"12345"
 ```
 
 #### Comment Parameters

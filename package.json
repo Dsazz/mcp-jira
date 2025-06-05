@@ -1,6 +1,6 @@
 {
   "name": "@dsazz/mcp-jira",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "A powerful Model Context Protocol (MCP) server for Atlassian JIRA integration. Access JIRA projects, manage issues, and streamline development workflows directly from any MCP-compatible editor or application.",
   "type": "module",
   "main": "dist/index.js",
