@@ -46,6 +46,11 @@ export interface IssueFields {
   created?: string | null;
   updated?: string | null;
   labels?: string[] | null;
+  project?: {
+    key: string;
+    name?: string;
+    id?: string;
+  } | null;
   [key: string]: unknown;
 }
 

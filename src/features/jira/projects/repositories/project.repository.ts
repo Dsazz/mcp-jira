@@ -111,7 +111,7 @@ export class ProjectRepositoryImpl implements ProjectRepository {
     });
 
     return this.httpClient.sendRequest<ProjectPermissions>({
-      endpoint: "user/permission/search",
+      endpoint: "mypermissions",
       method: "GET",
       queryParams: {
         projectKey,

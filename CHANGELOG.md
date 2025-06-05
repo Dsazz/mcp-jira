@@ -13,6 +13,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced performance optimizations
 - Advanced JIRA automation workflows
 
+## [0.5.2] - 2025-06-05
+
+### 🐛 Critical Bug Fixes
+
+- **🚨 JIRA Permission Validation Fixed**: Resolved critical bug where MCP-JIRA incorrectly reported permission failures
+  - **Issue**: Tool was using wrong JIRA REST API endpoint `/rest/api/3/user/permission/search` for permission checking
+  - **Error**: Users with correct permissions (CREATE_ISSUES, EDIT_ISSUES) were getting false permission denied errors
+  - **Fix**: Updated to correct endpoint `/rest/api/3/mypermissions` in ProjectPermissionRepository and ProjectRepository
+  - **Impact**: Users can now successfully create and edit JIRA issues when they have proper permissions
+  - **Verification**: Tested with real JIRA instance - permissions now correctly detected as GRANTED
+  - **Location**: `src/features/jira/projects/repositories/project-permission.repository.ts`, `src/features/jira/projects/repositories/project.repository.ts`
+
+### 📋 Quality Assurance
+
+- **Build Validation**: All TypeScript compilation errors resolved
+- **Linting**: All Biome linting issues fixed
+- **Test Coverage**: 824/824 unit tests passing
+- **Integration Testing**: 15 integration tests with proper credential validation
+- **Real JIRA Testing**: Verified fix with live JIRA instance (SEC project)
+
+### 🔍 Root Cause Analysis
+
+- **Problem**: JIRA Cloud API endpoint mismatch in permission validation
+- **Detection**: User reported permission failures despite having correct JIRA permissions
+- **Solution**: Updated API endpoints to use JIRA's standard `/mypermissions` endpoint
+- **Prevention**: Added integration tests to catch similar API endpoint issues
+
 ## [0.5.1] - 2025-06-05
 
 ### 🐛 Critical Bug Fixes

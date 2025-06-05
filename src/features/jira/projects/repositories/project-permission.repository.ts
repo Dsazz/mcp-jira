@@ -33,7 +33,7 @@ export class ProjectPermissionRepositoryImpl
     });
 
     const permissions = await this.httpClient.sendRequest<ProjectPermissions>({
-      endpoint: "user/permission/search",
+      endpoint: "mypermissions",
       method: "GET",
       queryParams: {
         projectKey,
