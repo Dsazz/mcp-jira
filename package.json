@@ -1,6 +1,6 @@
 {
   "name": "@dsazz/mcp-jira",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A powerful Model Context Protocol (MCP) server for Atlassian JIRA integration. Access JIRA projects, manage issues, and streamline development workflows directly from any MCP-compatible editor or application.",
   "type": "module",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target node",
+    "build": "bun build src/index.ts --outdir dist --target=node",
     "start": "node dist/index.js",
     "prepublishOnly": "bun run build",
     "format": "bunx biome format --write ./src",

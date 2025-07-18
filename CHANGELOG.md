@@ -13,6 +13,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced performance optimizations
 - Advanced JIRA automation workflows
 
+## [0.5.4] - 2025-01-18
+
+### 🐛 Critical Bug Fixes
+
+- **🚨 Node.js Compatibility Fixed**: Resolved critical syntax error preventing package execution on Node.js environments
+  - **Issue**: TypeScript enum compilation generated ES2021 `||=` operator causing `SyntaxError: missing ) after argument list`
+  - **Solution**: Replaced TypeScript enum with const assertion for broader compatibility
+  - **Impact**: Package now runs on Node.js 12.x and later (previously required Node.js 15.0.0+)
+  - **Affected**: `SprintState` enum in sprint models
+  - **Benefits**: Better tree-shaking, improved bundler compatibility, no breaking changes
+
+### 🔧 Technical Improvements
+
+- **TypeScript Configuration**: Updated target from ESNext to ES2020 for better compatibility
+- **Code Quality**: Improved enum patterns using const assertions for better performance
+- **Build Process**: Enhanced JavaScript output compatibility across Node.js versions
+
+### 📦 Package Updates
+
+- **Dependencies**: No dependency changes
+- **Breaking Changes**: None - fully backward compatible
+- **Migration**: No migration required - automatic compatibility improvement
+
 ## [0.5.3] - 2025-06-05
 
 ### 🐛 Critical Bug Fixes

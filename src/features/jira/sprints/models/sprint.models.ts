@@ -7,11 +7,13 @@ import type { Issue } from "@features/jira/issues/models/issue.models";
 /**
  * Sprint state
  */
-export enum SprintState {
-  FUTURE = "future",
-  ACTIVE = "active",
-  CLOSED = "closed",
-}
+export const SprintState = {
+  FUTURE: "future",
+  ACTIVE: "active",
+  CLOSED: "closed",
+} as const;
+
+export type SprintState = (typeof SprintState)[keyof typeof SprintState];
 
 /**
  * Sprint entity representing a JIRA sprint
